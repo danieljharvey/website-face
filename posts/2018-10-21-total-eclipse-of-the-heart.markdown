@@ -79,3 +79,11 @@ A function like this allows us to turn a regular list into a NonEmpty list, by r
 Like all somewhat trivial examples, perhaps this seems like a lot of work for nothing (plus the overhead of dealing with a new datatype) - however this concept of doing a piece of validation once, capturing it in the type, and then having a much simpler time dealing with it onwards is very powerful indeed.
 
 (btw, Haskell actually has a NonEmpty list type, in `Data.List.NonEmpty`, but it's more fun to make our own)
+
+Anyway, that's quite enough for now I feel.
+
+Further reading:
+
+[Are your functions total?](https://adamdrake.com/are-your-functions-total.html)
+[Data.Maybe](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Maybe.html)
+[Data.List.NonEmpty](https://hackage.haskell.org/package/semigroups-0.16.0.1/docs/Data-List-NonEmpty.html)

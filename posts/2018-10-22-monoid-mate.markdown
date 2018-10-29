@@ -79,7 +79,7 @@ output = foldr concat "sorry, no value" stringList
 -- output = "sorry, no valuehotdogjumpingfrogalbuquerque"
 ```
 
-I guess we need empty values that don't mess up the result then.
+I guess we need empty values that don't mess up the result then. Let's stick to `""` for strings.
 
 ## What's Monoid then?
 
@@ -149,4 +149,17 @@ It also allows passing a function `f` which we can use to turn an non-Monoid `In
 
 (A quick interlude for the confused, the `Monoid m =>` part of the type signature is not the first function argument, but rather a constraint saying 'all `m` in this type signature must be of the typeclass Monoid. The `f` is the function of type `(a -> m)`, and `as` are the array of Monoid values we are working on. The key here is the `=>` meaning 'constraint', rather than `->`, meaning function application. I know, I'm sorry.)
 
-Therefore, we can just combine our list of strings like thus: `fold ["horse","time","great"]` to make `"horsetimegreat"`. What is the point in this? Well, when doing something simple like this, perhaps not much. We have saved typing around ten letters in exchange for making the function of our code less opaque, perhaps not a great compromise. But now any piece of code can request a Monoid, and by doing so will automatically be able to fold it down, without really needing any deeper understanding of the datatype itself.
+Therefore, we can just combine our list of strings like thus: `fold ["horse","time","great"]` to make `"horsetimegreat"`.
+
+Wonderful!
+
+So. The question on everybody's lips...what is the point in this?
+
+ell, when doing something simple like this, perhaps not much. We have saved typing around ten letters in exchange for making the function of our code less opaque, perhaps not a great compromise. But now any other function could request a Monoid, and by doing so will automatically be able to combine it in some way, without really needing any deeper understanding of the datatype itself. And combining doesn't have to mean just concatenating - it could be combining a bunch of `Maybe`s, collapsing a tree or [many other things](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Monoid.html). The important thing is that the other function doesn't really need to care how it works, that's `Monoid`'s job.
+
+Anyway, that's quite enough for now I feel.
+
+Further reading:
+
+[Data.Monoid on Hackage](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Monoid.html)
+[5 minutes to Monoids](https://medium.com/@sjsyrek/five-minutes-to-monoid-fe6f364d0bba)
