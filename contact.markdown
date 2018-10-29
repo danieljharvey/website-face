@@ -2,8 +2,10 @@
 title: Contact
 ---
 
-Email: danieljamesharvey@gmail.com
+Say hi! Or don't! It's up to you.
 
-Github: http://github.com/danieljharvey
+Email: [danieljamesharvey@gmail.com](mailto:danieljamesharvey@gmail.com)
 
-Twitter: @yevrahjleinad
+Github: [http://github.com/danieljharvey](http://github.com/danieljharvey)
+
+Twitter: @[yevrahjleinad](https://twitter.com/yevrahjleinad)
