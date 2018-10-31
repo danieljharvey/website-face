@@ -1,8 +1,4 @@
----
-title: Total Eclipse of the Heart
----
-
-I recently read a piece of useful advice on Twitter about total functions which I enjoyed. A total function is a function that
+pI recently read a piece of useful advice on Twitter about total functions which I enjoyed. A total function is a function that
 
 1. always returns some valid data (rather than just when it feels like doing so) and
 2. does not go into an infinite loop.
