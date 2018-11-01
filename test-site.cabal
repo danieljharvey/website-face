@@ -12,6 +12,7 @@ executable site
 
 library
   exposed-modules:  LensFace
+                  , TotalEclipse
   hs-source-dirs:   code  
   build-depends:    base == 4.*
                   , lens

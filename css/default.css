@@ -62,12 +62,14 @@ article .header {
   text-decoration: none;
 }
 
-p {
+p,
+li {
   font-weight: 100;
   font-size: 90%;
 }
 
-p code {
+p code,
+li code {
   color: rgb(204, 97, 179);
   font-size: 130%;
 }

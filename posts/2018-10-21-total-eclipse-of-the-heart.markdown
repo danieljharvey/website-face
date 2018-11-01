@@ -1,13 +1,17 @@
-pI recently read a piece of useful advice on Twitter about total functions which I enjoyed. A total function is a function that
+---
+title: Total Eclipse Of The Heart
+---
 
-1. always returns some valid data (rather than just when it feels like doing so) and
-2. does not go into an infinite loop.
-
-The advice (which I will definitely accurately source at some point in the future, lol) goes something like this:
+I recently read a piece of useful advice on Twitter about total functions which I enjoyed. The advice (which I will definitely accurately source at some point in the future, lol) goes something like this:
 
 #### "You start making your functions total by adding Maybe, but then you move onto removing Maybe."
 
 Like all my favourite advice this sounds like it doesn't make any sense, so I figured I'd try and get to the bottom of this.
+
+Firstly, to clarify, a total function is a function that:
+
+1. Always returns some valid data (rather than just when it feels like doing so) and
+2. Does not go into an infinite loop.
 
 Let's start with a non-total function. The canonical example is Head from the Haskell Prelude, which returns you the first item in a list, and looks something like this:
 
@@ -81,5 +85,7 @@ Anyway, that's quite enough for now I feel.
 Further reading:
 
 [Are your functions total?](https://adamdrake.com/are-your-functions-total.html)
+
 [Data.Maybe](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Maybe.html)
+
 [Data.List.NonEmpty](https://hackage.haskell.org/package/semigroups-0.16.0.1/docs/Data-List-NonEmpty.html)
