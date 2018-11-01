@@ -24,6 +24,7 @@ const age = appData.info.age; // easy!
 ```
 
 It's not too bad in Haskell either, as it auto creates selector functions for records like thus:
+
 ```haskell
 getAge :: AppData -> Int
 getApp appData = age (info appData)
@@ -41,19 +42,19 @@ Ignoring for a moment that we have ruined the original object and probably confu
 
 ```javascript
 const newAppData = {
-    ...appData,
-    info: {
-        ...appData.info,
-        age: appData.info.age + 1
-    }
-}
+  ...appData,
+  info: {
+    ...appData.info,
+    age: appData.info.age + 1
+  }
+};
 ```
 
 And this will only get worse as the levels get deeper. Haskell has a similar problem with deep updates in records, here's the equivalent code:
 
 ```haskell
 myAppData :: AppData
-myAppData = 
+myAppData =
     AppData { title = "Example"
             , info = { firstName = "Edward"
                      , surName = "Horse"
@@ -66,5 +67,3 @@ incrementAge appData = appData { info = info appData { age = (age $ info $ appDa
 ```
 
 Urgh. What's the solution then? Lens!
-
- 

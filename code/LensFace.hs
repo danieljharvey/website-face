@@ -1,21 +1,21 @@
 module LensFace where
 
-import Control.Lens
-import Control.Lens.Prism
+import           Control.Lens
+import           Control.Lens.Prism
 
 main :: IO ()
 main = print "what"
 
 data DbConfig = DbConfig { ipAddress :: String
-                         , thePort :: Int 
+                         , thePort   :: Int
                          } deriving (Show)
 
-data AppConfig = AppConfig { value :: Either String Int
-                           , dbConfig :: DbConfig                           
+data AppConfig = AppConfig { value    :: Either String Int
+                           , dbConfig :: DbConfig
                            } deriving (Show)
 
 getPort :: AppConfig -> Int
-getPort app = thePort $ dbConfig $ app
+getPort app = thePort $ dbConfig app
 
 setPort :: Int -> AppConfig -> AppConfig
 setPort port app =
@@ -23,21 +23,21 @@ setPort port app =
 
 
 getValueInt :: AppConfig -> Maybe Int
-getValueInt app = case (value app) of 
+getValueInt app = case value app of
                     Right i -> Just i
-                    _ -> Nothing
+                    _       -> Nothing
 
 getValueError :: AppConfig -> Maybe String
-getValueError app = case (value app) of
+getValueError app = case value app of
                       Left i -> Just i
-                      _ -> Nothing
+                      _      -> Nothing
 
 setValueInt :: Int -> AppConfig -> AppConfig
-setValueInt val app = 
+setValueInt val app =
     app { value = Right val }
 
 setValueError :: String -> AppConfig -> AppConfig
-setValueError str app = 
+setValueError str app =
     app { value = Left str }
 
 -- As you can see, the above will soon get a bit tiresome, let's Lens it!
@@ -56,16 +56,15 @@ valueLens :: Lens' AppConfig (Either String Int)
 valueLens = lens value (\app value -> app { value = value } )
 
 valueErrorPrism :: Prism' (Either String Int) String
-valueErrorPrism = prism' Left (\e -> case e of 
+valueErrorPrism = prism' Left (\e -> case e of
                             Left a -> Just a
-                            _ -> Nothing)
+                            _      -> Nothing)
 
 
 valueIntPrism :: Prism' (Either String Int) Int
 valueIntPrism = prism' Right (\e -> case e of
                                       Right b -> Just b
-                                      _ -> Nothing)
-
+                                      _       -> Nothing)
 
 
 fullValueError :: Traversal' AppConfig String
