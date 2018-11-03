@@ -30,7 +30,26 @@ Shit!
         isSameHorse first second = first == second
 ```
 
-That's terrible news. What's wrong here? Apprently, we need to make an instance of the `Eq` (short for 'equality') typeclass for `Horse` before they can be compared.
+That's terrible news. What's wrong here? Apprently, we need to make an instance of the `Eq` (short for 'equality') typeclass for `Horse` before they can be compared. What's the `Eq` typeclass?
+
+We can find out more by firing up `ghci`, the GHC repl.
+
+You should see a prompt with the following:
+
+```bash
+Prelude>
+```
+
+If we enter `:info Eq`, we get the following:
+
+```haskell
+class Eq a where
+  (==) :: a -> a -> Bool
+  (/=) :: a -> a -> Bool
+  {-# MINIMAL (==) | (/=) #-}
+```
+
+It shows there are two functions in the `Eq` typeclass, `==` and `/=` (equals and not-equals), and that a "minimal" definition of `Eq` only needs one of those.
 
 Let's start again and make a better horse.
 
@@ -38,7 +57,7 @@ Let's start again and make a better horse.
 data BetterHorse = Tiny | Average | Huge
 ```
 
-Let's not make the same mistake this time - let's make an instance of the `Eq` typeclass for them.
+Let's not make the same mistake this time - let's make an instance of the `Eq` typeclass for them. We are going to implement `==` which has a type of `a -> a -> Bool`.
 
 ```haskell
 instance Eq BetterHorse where
@@ -60,11 +79,13 @@ Now our `BetterHorse` comparing function works. Let's give it a go.
 ```haskell
 nope :: Bool
 nope = isSameBetterHorse Tiny Huge
+-- nope = False
 ```
 
 ```haskell
 yep :: Bool
 yep = isSameBetterHorse Average Average
+-- yep = True
 ```
 
 All seems to be fine here. We even get the `/=` function for free by defining `==`.
