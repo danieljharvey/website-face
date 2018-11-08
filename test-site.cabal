@@ -15,6 +15,8 @@ library
                   , Eq
                   , Ord
                   , TotalEclipse
+                  , Applicative
+                  , DoNotation
   hs-source-dirs:   code  
   build-depends:    base == 4.*
                   , lens
