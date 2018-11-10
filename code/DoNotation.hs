@@ -21,8 +21,7 @@ safeHead (a:_) = Just a
 safeHeadTwice :: [[a]] -> Maybe a
 safeHeadTwice aas = do
     as <- safeHead aas
-    a <- safeHead as
-    return a
+    safeHead as
 
 safeHeadTwice2 :: [[a]] -> Maybe a
 safeHeadTwice2 aas = safeHead aas

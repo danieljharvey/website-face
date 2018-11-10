@@ -1,12 +1,12 @@
 module Applicative where
 
-import Data.Monoid ((<>))
-import Data.List (intersperse, concat)
+import           Data.List   (concat, intersperse)
+import           Data.Monoid ((<>))
 
-data CalcFace a = CalcFace [String] a
+data CalcFace a = CalcFace [String] a deriving (Eq)
 
 instance (Show a) => Show (CalcFace a) where
-    show (CalcFace names a) = (concat parts) ++ " equals " ++ show a where
+    show (CalcFace names a) = concat parts ++ " equals " ++ show a where
         parts = intersperse " " names
 
 instance Functor CalcFace where
@@ -22,9 +22,9 @@ addOne :: CalcFace (Int -> Int)
 addOne = CalcFace ["add 1"] (+1)
 
 instance Applicative CalcFace where
-    (CalcFace operation f) <*> (CalcFace value a) = (CalcFace newNames $ f a) where
+    (CalcFace operation f) <*> (CalcFace value a) = CalcFace newNames $ f a where
         newNames = value <> operation
-    pure a = CalcFace [] a
+    pure = CalcFace []
 
 oneAddOne :: CalcFace Int
 oneAddOne = addOne <*> one
@@ -42,6 +42,6 @@ oneAddThreeMonadically :: CalcFace Int
 oneAddThreeMonadically = one >>= addThreeMonadically
 
 oneAddThreeAddThreeMonadically :: CalcFace Int
-oneAddThreeAddThreeMonadically = one >>= addThreeMonadically 
+oneAddThreeAddThreeMonadically = one >>= addThreeMonadically
                                      >>= addThreeMonadically
 
