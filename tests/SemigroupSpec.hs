@@ -1,0 +1,14 @@
+module SemigroupSpec where
+
+import           Control.Exception (evaluate)
+import           Semigroup
+import           Test.Hspec
+import           Test.QuickCheck   hiding (NonEmpty)
+
+-- spec :: IO ()
+spec = do
+    describe "Semigroups" $ do
+        it "toList" $ do
+            toList (NonEmpty 1 [2,3]) `shouldBe` [1,2,3]
+        it "third" $ do
+            third `shouldBe` (NonEmpty 1 [2,3,4,5,6,7,8])

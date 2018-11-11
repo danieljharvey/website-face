@@ -11,7 +11,7 @@ spec = do
     it "Head function with item" $ do
       safeHead [1,2,3] `shouldBe` Just 1
     it "Head function with no item" $ do
-      safeHead [] `shouldBe` Nothing
+      safeHead ([] :: [Int]) `shouldBe` Nothing
     it "safeHeadTwice" $ do
       safeHeadTwice [[1]] `shouldBe` Just 1
     it "safeHeadTwice2" $ do

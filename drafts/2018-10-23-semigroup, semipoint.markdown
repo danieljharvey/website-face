@@ -48,6 +48,7 @@ A quick look in the [Data.Semigroup.Foldable](http://hackage.haskell.org/package
 
 ```haskell
 fold1 :: Semigroup m => t m -> m
+fold1 = foldMap1 id
 ```
 
 What does this mean? The `Semigroup m =>` part means all the `m`s inside must be instances of `Semigroup`, but the m can be anything.

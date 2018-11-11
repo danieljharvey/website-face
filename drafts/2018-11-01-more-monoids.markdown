@@ -9,11 +9,23 @@ To further muddy the water, here are some more monoids that should make things e
 Monoids don't need to be lists or arrays of things either, they can also apply to the behaviour of numbers. Integers, for instance, can form several Monoids. One is addition:
 
 ```haskell
-mappend :: Int -> Int -> Int
-mappend a b = a + b
+newtype MySum a = MySum {
+    getMySum :: a
+}
 
-mempty :: Int
-mempty = 0
+instance (Num a) => Semigroup (MySum a) where
+    MySum a <> MySum b = MySum (a + b)
+
+instance (Num a) => Monoid (MySum a) where
+    mempty = MySum 0
+```
+
+Here, we have created a `newtype`, which is a wrapper around a value giving a new type, that allows us to treat it differently. We create a value with the `MySum` constructor, or we run `getMySum` on the value to get it out again. How might we use this?
+
+```haskell
+ten :: Int
+ten = getMySum $ MySum 1 <> MySum 7 <> MySum 2
+-- ten == 10
 ```
 
 Adding `0` onto a number achieves nothing whatsoever, hence it is an ideal empty element.
