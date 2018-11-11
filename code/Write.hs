@@ -1,8 +1,10 @@
 module Write where
 
-import           Control.Monad.Writer.Lazy
+import           Control.Monad.Writer
 import           Data.List
 import           Prelude
+
+type Writer = WriterT Identity
 
 type Href = String
 
