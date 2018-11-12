@@ -4,8 +4,6 @@ import           Control.Monad.Writer
 import           Data.List
 import           Prelude
 
-type Writer = WriterT Identity
-
 type Href = String
 
 data Style = Color String | BackgroundColor String | Width Int | Height Int deriving (Show)
@@ -64,13 +62,17 @@ showStyleTree (A style href children) =
             , "</div>"
             ]
 
+
+multiRenderTree = mapM writerStyleTree
+
 writerStyleTree :: StyleTree -> Writer [[Style]] String
 writerStyleTree (Div style children) = do
     tell [style]
+    rendered <- multiRenderTree children
     pure $ concat [ "<div "
             , renderStyles style
             , ">"
-            , concatMap showStyleTree children
+            , concat rendered
             , "</div>"
             ]
 writerStyleTree (Title style text) = do
@@ -89,11 +91,12 @@ writerStyleTree (P style text) = do
             ]
 writerStyleTree (A style href children) = do
     tell [style]
+    rendered <- multiRenderTree children
     pure $ concat [ "<a href=\""
             , href
             , "\" "
             , renderStyles style
             , ">"
-            , concatMap showStyleTree children
+            , concat rendered
             , "</div>"
             ]
