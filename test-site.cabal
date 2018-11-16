@@ -16,6 +16,7 @@ library
                   , Eq
                   , Ord
                   , Show
+                  , Functor
                   , Monoid
                   , Semigroup
                   , TotalEclipse
