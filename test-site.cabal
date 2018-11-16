@@ -23,11 +23,13 @@ library
                   , DoNotation
                   , Free
                   , Write
+                  , State
   hs-source-dirs:   code  
   build-depends:    base == 4.*
                   , lens
                   , free
                   , mtl
+                  , ilist
   default-language: Haskell2010
 
 test-suite unit-tests
@@ -36,6 +38,7 @@ test-suite unit-tests
   hs-source-dirs: tests, code
   build-depends: base
                 , mtl
+                , ilist
                 , hspec
                 , QuickCheck
                 , hspec-discover

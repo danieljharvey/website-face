@@ -14,8 +14,8 @@ data StyleTree = Div [Style] [StyleTree]
             | A [Style] Href [StyleTree]
 
 website :: StyleTree
-website = Div [] [ Title [] "My interesting website"
-           , P [] "Item of interest"
+website = Div [Width 100, Height 200] [ Title [] "My interesting website"
+           , P [Color "red"] "Item of interest"
            , A [] "http://danieljharvey.github.io" [ P [] "Website" ]
            , Div [BackgroundColor "#FFDD00"] [ P [] "Sub-item"
                     , P []"Another sub-item"
@@ -62,13 +62,10 @@ showStyleTree (A style href children) =
             , "</div>"
             ]
 
-
-multiRenderTree = mapM writerStyleTree
-
 writerStyleTree :: StyleTree -> Writer [[Style]] String
 writerStyleTree (Div style children) = do
     tell [style]
-    rendered <- multiRenderTree children
+    rendered <- mapM writerStyleTree children
     pure $ concat [ "<div "
             , renderStyles style
             , ">"
@@ -91,7 +88,7 @@ writerStyleTree (P style text) = do
             ]
 writerStyleTree (A style href children) = do
     tell [style]
-    rendered <- multiRenderTree children
+    rendered <- mapM writerStyleTree children
     pure $ concat [ "<a href=\""
             , href
             , "\" "
@@ -100,3 +97,4 @@ writerStyleTree (A style href children) = do
             , concat rendered
             , "</div>"
             ]
+
