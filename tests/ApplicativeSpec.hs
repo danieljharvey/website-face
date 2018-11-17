@@ -7,16 +7,23 @@ import           Test.QuickCheck
 
 -- spec :: IO ()
 spec = do
+  describe "intuitions" $ do
+    it "listOfLists" $
+      listOfLists `shouldBe` [[0,1,2], [1,2,3], [2,3,4]]
+    it "bigList" $
+      bigList `shouldBe` [0,1,2,1,2,3,2,3,4]
+    it "applicativeList" $
+      applicativeList `shouldBe` [0,1,2,1,2,3,2,3,4]
   describe "Applicative" $ do
-    it "Maps correctly" $ do
+    it "Maps correctly" $
       two `shouldBe` CalcFace ["1"] 2
-    it "Applies correctly" $ do
+    it "Applies correctly" $
       oneAddOneAddOne `shouldBe` CalcFace ["1", "add 1","add 1"] 3
-    it "Monadically applies" $ do
+    it "Monadically applies" $
       oneAddThreeAddThreeMonadically `shouldBe` CalcFace ["add 3"] 7
-    it "Quickchecks functor identity" $ do
+    it "Quickchecks functor identity" $
       quickCheck calcFaceFunctorIdentity
-    it "Quickchecks applicative identity" $ do
+    it "Quickchecks applicative identity" $
       quickCheck calcFaceApplicativeIdentity
 
 
