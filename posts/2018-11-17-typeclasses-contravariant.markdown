@@ -47,7 +47,7 @@ What will we need for doing that then?
 Prelude> :i Contravariant
 ```
 
-If you get an error, please skip to the bottom of the page for some useful links, however if you have the `contravariant` library floating around from something or other then GREAT! You'll see this:
+If are typing along with all this and get an error, please skip to the bottom of the page for some useful links, however if you have the `contravariant` library floating around or are just happy to take my word for it then GREAT! You'll see this:
 
 ```haskell
 class Contravariant (f :: * -> *) where
@@ -150,4 +150,4 @@ NOTE: If you happened to get this error:
 <interactive>:1:1: error: Not in scope: ‘Contravariant’
 ```
 
-...then you will need to install the `contravariant` package from Hackage. I'm not going to go into that at this point but here is a good starting point: [Practical Haskell - Getting Started](http://seanhess.github.io/2015/08/04/practical-haskell-getting-started.html)
+...then you will need to install the `contravariant` package from Hackage. I'm not going to go into Haskell package management at this point but here is a good starting point: [Practical Haskell - Getting Started](http://seanhess.github.io/2015/08/04/practical-haskell-getting-started.html). It's all going to be fine, I promise. The documentation isn't great but the tools are pretty nice.
