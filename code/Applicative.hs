@@ -26,10 +26,10 @@ plusOne i = i + 1
 applicativeList :: [Integer]
 applicativeList = [minusOne, doNothing, plusOne] <*> [1,2,3]
 
-data CalcFace a = CalcFace [String] a deriving (Eq)
+data CalcFace a = CalcFace [String] a deriving (Eq, Show)
 
-instance (Show a) => Show (CalcFace a) where
-    show (CalcFace names a) =
+showCalculation :: (Show a) => CalcFace a -> String
+showCalculation (CalcFace names a) =
         concat parts ++ " equals " ++ show a where
         parts = intersperse " " names
 
@@ -38,9 +38,11 @@ instance Functor CalcFace where
 
 one :: CalcFace Int
 one = CalcFace ["1"] 1
+-- showCalculation one == "1 equals 1"
 
 two :: CalcFace Int
 two = fmap (+1) one
+-- showCalculation one == "1 equals 2". Doh.
 
 addOne :: CalcFace (Int -> Int)
 addOne = CalcFace ["add 1"] (+1)

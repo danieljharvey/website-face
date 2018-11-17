@@ -25,6 +25,11 @@ spec = do
       quickCheck calcFaceFunctorIdentity
     it "Quickchecks applicative identity" $
       quickCheck calcFaceApplicativeIdentity
+  describe "showCalculation" $ do
+    it "Shows one" $
+      showCalculation one `shouldBe` "1 equals 1"
+    it "Shows broken functor version" $
+      showCalculation two `shouldBe` "1 equals 2"
 
 
 instance Arbitrary a => Arbitrary (CalcFace a) where
