@@ -71,13 +71,13 @@ li {
 p code,
 li code {
   color: rgb(204, 97, 179);
-  font-size: 130%;
+  font-size: 120%;
 }
 
 pre.sourceCode {
   background-color: #000;
   padding: 10px;
-  font-size: 120%;
+  font-size: 100%;
 }
 
 @media (max-width: 319px) {
