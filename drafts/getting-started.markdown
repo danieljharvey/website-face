@@ -1,8 +1,8 @@
 ---
-title: Getting Started with Haskell and Stack
+title: My First Haskell Project - Part 1
 ---
 
-I have not always found it clear how to get started with Haskell, so here are some words about that. We are going to make a tiny library for reading environment variables, which can be used for database connections or similar. I use MacOS but will try not to make anything too platform specific, and link to docs where info for other systems can be found where possible.
+I have not always found it clear how to get started with Haskell, and I have a small library I want to make as an experiment so I figured I'd document the process as a sort of Getting Started. The tiny library I wish to make is for reading environment variables, which can be used for database connections or similar. I use MacOS but will try not to make anything too platform specific, and link to docs where info for other systems can be found where possible.
 
 First, let's assume we have nothing Haskell-based on the system whatsoever, and start by installing Stack.
 
@@ -93,7 +93,7 @@ tests:
 
 If you're familar with the Javascript world, this isn't a million miles away from a `package.json` file.
 
-We aren't going to need any new libraries for our project, but let's install one anyway. We're going to choose the [contravariant](http://hackage.haskell.org/package/contravariant-1.5/docs/Data-Functor-Contravariant.html) package, because why not.
+We aren't going to need any new libraries for our project, but it seems sensible to explain how that's done. Let's install [contravariant](http://hackage.haskell.org/package/contravariant-1.5/docs/Data-Functor-Contravariant.html) package, because why not.
 
 Let's add it to here:
 
@@ -112,9 +112,15 @@ dependencies:
 
 We don't mind what version in this case - Stack will choose us a sensible one that fits with our other dependencies, that's what it's for.
 
-Let's run `stack build` and watch the action.
+Let's run 
 
-The first time you run this on the project, Stack will download the GHC compiler and all the libraries so you may wish to take a break and go and read War and Peace or something. After the initial wait subsequent builds will be very quick, but this one is a bit of a stinker.
+```bash
+stack build
+```
+
+and watch the action.
+
+The first time you run this on any given project, Stack will download the GHC compiler and all the libraries so you may wish to take a break and go and read War and Peace or something. After the initial wait subsequent builds will be very quick, but this one is a bit of a stinker.
 
 Ok. Great, we have filled our hard drive with nonsense and we are ready to Haskell.
 
@@ -150,7 +156,7 @@ executables:
 
 What it telling us? Well, a bunch of things, but two that stick out.
 
-1. Firstly, yes, our main source directory is `app` and the main file is `Main.hs`.
+1. Firstly, yes, our assumptions were correct - our main source directory is `app` and the main file is `Main.hs`.
 2. Secondly, that our executable file is called `simple-env-exe`
 
 Let's run it then!
@@ -171,7 +177,7 @@ module Lib
     ) where
 
 someFunc :: IO ()
-someFunc = print "someFunc"
+someFunc = putStrLn "someFunc"
 ```
 
 Our library is going to extract environment variables so they can be used in programs. This is helpful for stuff like database credentials that we don't want to save in version control.
