@@ -6,9 +6,30 @@ import           Test.Hspec
 import           Test.QuickCheck   hiding (NonEmpty)
 
 -- spec :: IO ()
-spec = do
-    describe "Semigroups" $ do
-        it "toList" $ do
-            toList (NonEmpty 1 [2,3]) `shouldBe` [1,2,3]
-        it "third" $ do
-            third `shouldBe` (NonEmpty 1 [2,3,4,5,6,7,8])
+spec = describe "Semigroups" $ do
+        describe "list" $ do
+            it "combines lists with semigroup" $
+                thirdList `shouldBe` [1,2,3,4,5,6]
+            it "uses ++" $
+                [1,2,3] ++ [4,5,6] `shouldBe` [1,2,3,4,5,6]
+        describe "string" $
+            it "uses semigroup" $
+                thirdString `shouldBe` "GreatStuff"
+        describe "MySum" $ do
+            it "adds two numbers in a very silly way" $
+                ten `shouldBe` 10
+            it "does not matter what order the elements are in" $
+                ten `shouldBe` anotherTen
+        describe "MyProduct" $ do
+            it "multiplies two numbers in a very silly way" $
+                sixtySix `shouldBe` 66
+            it "does not matter what order the elements are in" $
+                sixtySix `shouldBe` anotherSixtySix
+        describe "MyString" $ do
+            it "allTheThings" $
+                allTheThings `shouldBe` "AllTheThings"
+            it "otherAllTheThings" $
+                otherAllTheThings `shouldBe` "AllTheThings"
+        describe "NonEmpty" $
+            it "third" $
+                third `shouldBe` NonEmpty 1 [2,3,4,5,6,7,8]
