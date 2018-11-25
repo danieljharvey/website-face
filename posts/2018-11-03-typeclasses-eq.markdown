@@ -30,7 +30,7 @@ Shit!
         isSameHorse first second = first == second
 ```
 
-That's terrible news. What's wrong here? Apprently, we need to make an instance of the `Eq` (short for 'equality') typeclass for `Horse` before they can be compared. What's the `Eq` typeclass?
+That's terrible news. What's wrong here? Apparently, we need to make an instance of the `Eq` (short for 'equality') typeclass for `Horse` before they can be compared. What's the `Eq` typeclass?
 
 We can find out more by firing up `ghci`, the GHC repl.
 

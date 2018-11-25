@@ -18,10 +18,10 @@ const added = [1, 2, 3, 4].reduce((total, item) => {
 Or perhaps we could get the maximum of the same list.
 
 ```javascript
-const max = [1, 2, 3, 4].reduce((highest, item) => {
+const maxNo = [1, 2, 3, 4].reduce((highest, item) => {
   return highest > item ? highest : item;
 }, 0);
-// max == 4
+// maxNo == 4
 ```
 
 So in Haskell we have the very similar `foldr` with the following signature:
@@ -32,26 +32,32 @@ Prelude> :i Foldable
 
 ```haskell
 class Foldable (t :: * -> *) where
-  Data.Foldable.fold :: Monoid m => t m -> m
   foldMap :: Monoid m => (a -> m) -> t a -> m
   foldr :: (a -> b -> b) -> b -> t a -> b
-  Data.Foldable.foldr' :: (a -> b -> b) -> b -> t a -> b
-  foldl :: (b -> a -> b) -> b -> t a -> b
-  Data.Foldable.foldl' :: (b -> a -> b) -> b -> t a -> b
-  foldr1 :: (a -> a -> a) -> t a -> a
-  foldl1 :: (a -> a -> a) -> t a -> a
-  Data.Foldable.toList :: t a -> [a]
-  null :: t a -> Bool
-  length :: t a -> Int
-  elem :: Eq a => a -> t a -> Bool
-  maximum :: Ord a => t a -> a
-  minimum :: Ord a => t a -> a
-  sum :: Num a => t a -> a
-  product :: Num a => t a -> a
   {-# MINIMAL foldMap | foldr #-}
 ```
+
+(there is actually loads more but these are the key ones)
 
 ```haskell
 foldr :: Foldable t => (a -> b -> b) -> b -> t a -> b
 foldMap :: (Foldable t, Monoid m) => (a -> m) -> t a -> m
 ```
+
+Here are the above JS functions using `foldr`.
+
+```haskell
+added :: Int
+added = foldr (\a b -> a + b) 0 [1,2,3,4]
+-- added = 10
+```
+
+```haskell
+maxNo :: Int
+maxNo = foldr (\a b -> if a > b then a else b) 0 [1,2,3,4]
+-- maxNo = 4
+```
+
+Not hugely different from the Javascript equivalent really. If you squint you can see the combining function, the initial value, and the data itself.
+
+`foldMap` works a little differently. Instead of taking a custom combining function and using that to combine the items together, it takes a `a -> m` function (where the `m` in question is any `Monoid` instance). It uses this to turn each item into a `Monoid`, and then uses the `<>` and `mempty` functions for that Monoid to combine the items.
