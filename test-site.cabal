@@ -26,12 +26,14 @@ library
                   , Write
                   , State
                   , Contravariant
+                  , Comonad
   hs-source-dirs:   code
   build-depends:    base == 4.*
                   , lens
                   , free
                   , mtl
                   , ilist
+                  , comonad
                   , contravariant
   default-language: Haskell2010
 
@@ -42,6 +44,7 @@ test-suite unit-tests
   build-depends: base
                 , mtl
                 , ilist
+                , comonad
                 , contravariant
                 , hspec
                 , QuickCheck
