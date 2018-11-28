@@ -20,6 +20,7 @@ library
                   , Monoid
                   , Semigroup
                   , TotalEclipse
+                  , Newtypes
                   , Applicative
                   , DoNotation
                   , Foldable

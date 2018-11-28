@@ -13,3 +13,9 @@ spec =
         maxNo `shouldBe` 4
     it "addTwo" $
         addTwo `shouldBe` 10
+    it "twentyFour" $
+        twentyFour `shouldBe` 24
+    it "allOfThem" $
+        allOfThem `shouldBe` True
+    it "notAll" $
+        notAll `shouldBe` False
