@@ -2,24 +2,179 @@
 title: Why the hell should I care about newtypes?
 ---
 
-I had an epiphany recently when reading a nice blog explaining Coyoneda. I'd read many others but struggled to find the energy to care what the thing was, when I realise the reason was that the blog started with an explanation of the problem they were trying to solve.
+Good question. What are `newtypes`?
 
-Mindblowing.
+You see them in Haskell a lot. Here's one.
 
-It shouldn't be, but it often feels it is.
+```haskell
+newtype Dog a = Dog { getDog :: a }
+```
 
-I know there's nothing wrong with interesting things for interesting's sake, and I suppose no writer owes anything to any reader really, especially on the internet where everything is just thoughts farted out into the breeze.
+We can make a `Dog` as a container for a thing (in this case, a `String`)
 
-Anyway. I don't want to feel that way. I want to know useful things.
+```haskell
+frank :: Dog String
+frank = Dog "Frank"
+-- frank == Dog "Frank"
+```
 
-I think you have useful things.
+Or we can unwrap it again and lose nothing along the way (this means the types `String` and `Dog String` are `isomorphic` in maths terms`)
 
-Tell me why they're useful.
+```haskell
+name :: String
+name = getDog frank
+-- name == "Frank"
+```
 
-Anyway.
+In short, they are basically the same thing. Once compiled in fact, they're exactly the same, so there's no cost to all this, computationally.
 
-Blah.
+```haskell
+itsTheSame :: Bool
+itsTheSame = "Frank" == getDog (Dog "Frank")
+```
 
-Newtypes.
+So why do this?
 
-You see them in Haskell a lot.
+Well, the nice thing about a `newtype` is that we can use it to pass data around with a bit more contextual information about what it means.
+
+Let's calculate a salary. That seems like a plausible thing to do with a computer.
+
+```haskell
+calculateSalaryBad :: (Num a) => a -> a
+calculateSalaryBad months = months * 1000
+```
+
+This function takes a number of months, and calculates how much this person should get paid, based on a salary of `1000` (of some unknown unit) a month.
+
+But what happens if we give it an invalid number of months?
+
+```haskell
+badAmount = calculateSalaryBad (-100)
+-- badAmount == -100000
+```
+
+That's crazy talk! Surely this weird minus payment will send even the most well-meaning of accountants into a spin.
+
+Let's improve it a bit by checking if the number is negative.
+
+```haskell
+calculateSalaryBetter :: (Num a, Ord a) => a -> Maybe a
+calculateSalaryBetter i = if i < 0
+                        then Nothing
+                        else Just (i * 1000)
+```
+
+Note that we're introducing the `Ord` typeclass here, as we need to compare amounts. We don't mind what `a` is as long as it is both a valid number (ie, in the `Num` typeclass) and is orderable (ie, the `Ord` typeclass).
+
+So now if we try this on a stupid amount, we get `Nothing`
+
+```haskell
+safeAmount = calculateSalaryBetter (-100)
+-- safeAmount = Nothing
+```
+
+OK. Good stuff. That should stop the accounts department crying into their sensibly priced but ultimately unsatisfying packed lunches.
+
+The thing is, when we run this, we get this `Just` wrapped around things.
+
+```haskell
+anAmount = calculateSalaryBetter 12
+-- anAmount == Just 12000
+```
+
+This is fine in isolation, but if we wanted to do a lot of calculations here we don't want to be wrapping and unwrapping `Maybe` values all over the place. It means mixing up our validation logic with our actual business logic or whatever, and that's Bad.
+
+What about a nice `newtype` solution?
+
+```haskell
+newtype PositiveNum a = PositiveNum { getPositiveNum :: a } deriving (Eq, Show)
+```
+
+Nothing to write home about so far, but the trick here is that Haskell allows us to export the type `PositiveNum` but not the constructor `PositiveNum`. That means that instead we can provide a function for making a `PositiveNum`s that does some validation. This means that, outside our module itself, there is no way to create a `PositiveNum` that doesn't make sense.
+
+```haskell
+makePositiveNum :: (Num a, Ord a) => a -> Maybe (PositiveNum a)
+makePositiveNum i
+    | i < 0 = Nothing
+    | otherwise = Just (PositiveNum i)
+```
+
+It comes wrapped in a `Maybe`, sure, but only one. It can be used over and over without needing validation, and once it is available it can be unwrapped with a quick `getPositiveNum`.
+
+```haskell
+num :: Int
+num = getPositiveNum (PositiveNum 10)
+-- num == 10
+```
+
+Great stuff.
+
+Let's make a nicer salary calculator.
+
+```haskell
+calculateSalary :: (Num a) => PositiveNum a -> a
+calculateSalary months = 1000 * (getPositiveNum months)
+```
+
+Pretty OK. Let's bring it all together. First our library functions:
+
+```haskell
+makePositiveNum :: (Num a, Ord a) => a -> Maybe (PositiveNum a)
+makePositiveNum i
+    | i < 0 = Nothing
+    | otherwise = Just (PositiveNum i)
+
+zero :: (Num a) => PositiveNum a
+zero = PositiveNum 0
+```
+
+We've added `zero` that just makes a default `PositiveNum` with a value of `0` here, to use as a fallback if the value is ridiculous.
+
+Now we have a function for getting a `PositiveNum` for our number of months:
+
+```haskell
+months :: (Num a, Ord a) => a -> PositiveNum a
+months i = fromMaybe zero (makePositiveNum i)
+
+yes :: PositiveNum Int
+yes = months 12
+-- yes = PositiveNum 12
+
+nope :: PositiveNum Int
+nope = months (-12)
+-- nope = PositiveNum 0
+```
+
+Which we can use as follows:
+
+```haskell
+total = calculateSalary (months 12)
+-- total == 12000
+```
+
+Nice. By pushing all of the validation concerns into the `months` function, our actual function is nice and simple and easy to understand. Also we have a nice re-usable tool, `PositiveNum` that can be used across our project everytime we need some guarantees about a value.
+
+### Bonus credit: Functor instance for a `newtype`.
+
+We can treat `newtypes` like any other type, and create typeclass instances for them. For instance, we could create a `functor` instance for `PositiveNum` and do calculations inside it by mapping instead.
+
+```haskell
+instance Functor PositiveNum where
+    fmap f (PositiveNum i) = PositiveNum (f i)
+```
+
+This lets us change the value inside `PositiveNum` with an `fmap` function.
+
+```haskell
+calculateSalaryClever :: (Num a) => PositiveNum a -> PositiveNum a
+calculateSalaryClever = fmap (*1000)
+```
+
+Or the same, but unwrap it afterwards:
+
+```haskell
+calculateSalaryClever2 :: (Num a) => PositiveNum a -> a
+calculateSalaryClever2 i = getPositiveNum (fmap (*1000) i)
+```
+
+Great.
