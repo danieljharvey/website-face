@@ -24,6 +24,7 @@ library
                   , Applicative
                   , DoNotation
                   , Foldable
+                  , Form
                   , Free
                   , Write
                   , State
