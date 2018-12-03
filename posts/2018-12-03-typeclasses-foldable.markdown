@@ -125,3 +125,11 @@ notAll = getMyAll $ foldMap MyAll [False, True, True]
 ```
 
 (I have also stolen `MyAll`, it is usually called just `All`. You can see the pattern here.)
+
+We could also very easily make a `MyAny` type which uses or (ie, `||`) which we could use to return a `True` whenever a single one of a collection of `Bool`s happens to be `True`. You might want to have a think about what the `mempty` value would be for that to work though. That's up to you.
+
+Anyhow. I'm bored of typing now so I guess this is it for this one.
+
+Further reading:
+
+[Data.Foldable](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Foldable.html)

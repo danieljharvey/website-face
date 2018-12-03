@@ -70,8 +70,6 @@ type Location = (Slice, Slice)
 data BattenType = Pink | Other deriving (Eq, Show)
 
 getBattenType :: Location -> BattenType
-getBattenType (x, y) = case x == y of
-                    True -> Pink
-                    _    -> Other
+getBattenType (x, y) = if x == y then Pink else Other
 
 
