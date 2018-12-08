@@ -1,4 +1,4 @@
-module LensFace where
+module Lenses where
 
 import           Control.Lens
 import           Control.Lens.Prism
@@ -6,18 +6,20 @@ import           Control.Lens.Prism
 main :: IO ()
 main = print "what"
 
+type Error = String
+
 data DbConfig = DbConfig { ipAddress :: String
                          , thePort   :: Int
                          } deriving (Show)
 
-data AppConfig = AppConfig { value    :: Either String Int
+data AppConfig = AppConfig { count    :: Either Error Int
                            , title    :: String
                            , dbConfig :: DbConfig
                            } deriving (Show)
 
 appData :: AppConfig
 appData = AppConfig {
-    value = Right 100
+    count = Right 100
   , title = "Hello"
   , dbConfig = DbConfig {
       ipAddress = "127.0.0.1"
@@ -38,23 +40,23 @@ setPort port app =
     app { dbConfig = (dbConfig app) { thePort = port } }
 
 
-getValueInt :: AppConfig -> Maybe Int
-getValueInt app = case value app of
+getCountInt :: AppConfig -> Maybe Int
+getCountInt app = case count app of
                     Right i -> Just i
                     _       -> Nothing
 
-getValueError :: AppConfig -> Maybe String
-getValueError app = case value app of
+getCountError :: AppConfig -> Maybe Error
+getCountError app = case count app of
                       Left i -> Just i
                       _      -> Nothing
 
-setValueInt :: Int -> AppConfig -> AppConfig
-setValueInt val app =
-    app { value = Right val }
+setCountInt :: Int -> AppConfig -> AppConfig
+setCountInt val app =
+    app { count = Right val }
 
-setValueError :: String -> AppConfig -> AppConfig
-setValueError str app =
-    app { value = Left str }
+setCountError :: String -> AppConfig -> AppConfig
+setCountError str app =
+    app { count = Left str }
 
 -- As you can see, the above will soon get a bit tiresome, let's Lens it!
 titleLens :: Lens' AppConfig String
@@ -75,23 +77,23 @@ appTitle = view titleLens appData -- = "Hello"
 
 -- And what about those Either types, can we do anything there? Sure!
 
-valueLens :: Lens' AppConfig (Either String Int)
-valueLens = lens value (\app value -> app { value = value } )
+countLens :: Lens' AppConfig (Either String Int)
+countLens = lens count (\app newVal -> app { count = newVal } )
 
-valueErrorPrism :: Prism' (Either String Int) String
-valueErrorPrism = prism' Left (\e -> case e of
+countErrorPrism :: Prism' (Either Error Int) String
+countErrorPrism = prism' Left (\e -> case e of
                             Left a -> Just a
                             _      -> Nothing)
 
 
-valueIntPrism :: Prism' (Either String Int) Int
-valueIntPrism = prism' Right (\e -> case e of
+countIntPrism :: Prism' (Either Error Int) Int
+countIntPrism = prism' Right (\e -> case e of
                                       Right b -> Just b
                                       _       -> Nothing)
 
 
-fullValueError :: Traversal' AppConfig String
-fullValueError = valueLens . valueErrorPrism
+fullCountError :: Traversal' AppConfig Error
+fullCountError = countLens . countErrorPrism
 
-fullValueInt :: Traversal' AppConfig Int
-fullValueInt = valueLens . valueIntPrism
+fullCountInt :: Traversal' AppConfig Int
+fullCountInt = countLens . countIntPrism
