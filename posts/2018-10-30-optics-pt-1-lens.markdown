@@ -1,8 +1,12 @@
 ---
-title: Learning Lens
+title: Why The Fuck Should I Care About Lens? (Part 1)
 ---
 
-Let's learn the lens!
+Lenses are a thing that Haskell people talk about a lot. They bloody love a lens. Everywhere you go, lens, lens, lens. What is lens? Should we, mere mortals, care?
+
+Let's try and find out what the big deal is.
+
+So.
 
 Immutability is great, but it does mean that updating a value that lives deep within a big data structure can become an utter pain in the arse. Let's define a data structure:
 
@@ -186,4 +190,10 @@ newApp = over fullPortLens (+1) appData
 --  }
 ```
 
-Look at all the things we've done with not too much code. We are now surely mighty hackers. Next time, we'll look at another variation on `Lens` called `Prism`, and see how it let's us interact with that `Either` type we've conveniently ignored in these examples...
+Look at all the things we've done with not too much code. We are now surely mighty hackers. A small disclaimer, the family of things that `Lens` is a part of are called `Optics`, and `Lens` is only the beginning. Next time, we'll look at another variation on `Lens` called `Prism`, and see how it let's us interact with that `Either` type we've conveniently ignored in these examples.
+
+Further reading:
+
+[Thinking in Ramda: Lenses](http://randycoulman.com/blog/2016/07/12/thinking-in-ramda-lenses/)
+
+[A Little Lens Starter Tutorial](https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/a-little-lens-starter-tutorial)
