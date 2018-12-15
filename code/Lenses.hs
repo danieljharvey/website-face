@@ -3,9 +3,6 @@ module Lenses where
 import           Control.Lens
 import           Control.Lens.Prism
 
-main :: IO ()
-main = print "what"
-
 type Error = String
 
 data DbConfig = DbConfig { ipAddress :: String
@@ -51,12 +48,12 @@ getCountError app = case count app of
                       _      -> Nothing
 
 setCountInt :: Int -> AppConfig -> AppConfig
-setCountInt val app =
-    app { count = Right val }
+setCountInt int app =
+    app { count = Right int }
 
 setCountError :: String -> AppConfig -> AppConfig
-setCountError str app =
-    app { count = Left str }
+setCountError err app =
+    app { count = Left err }
 
 -- As you can see, the above will soon get a bit tiresome, let's Lens it!
 titleLens :: Lens' AppConfig String
@@ -77,10 +74,30 @@ appTitle = view titleLens appData -- = "Hello"
 
 -- And what about those Either types, can we do anything there? Sure!
 
+type Dog = Either String Int
+
+dogString :: Dog
+dogString = Left "Dog Name"
+
+dogInt :: Dog
+dogInt = Right 100
+
+dogStringPrism :: Prism' Dog String
+dogStringPrism = prism' Left (\e -> case e of
+                            Left a -> Just a
+                            _      -> Nothing)
+
+dogIntPrism :: Prism' Dog Int
+dogIntPrism = prism' Right (\e -> case e of
+                            Right b -> Just b
+                            _       -> Nothing)
+
+
+-- and what about combining them with our previous lens?
 countLens :: Lens' AppConfig (Either String Int)
 countLens = lens count (\app newVal -> app { count = newVal } )
 
-countErrorPrism :: Prism' (Either Error Int) String
+countErrorPrism :: Prism' (Either Error Int) Error
 countErrorPrism = prism' Left (\e -> case e of
                             Left a -> Just a
                             _      -> Nothing)
