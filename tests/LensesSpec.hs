@@ -25,21 +25,40 @@ spec = do
       getCountError (setCountError "Horses" appData) `shouldBe` Just "Horses"
   describe "Prisms" $ do
     it "Gets the string" $
-      preview dogStringPrism dogString `shouldBe` Just "Dog Name"
+      preview dogNamePrism spruceBruce `shouldBe` Just "Spruce Bruce"
     it "Gets no string" $
-      preview dogIntPrism dogString `shouldBe` Nothing
+      preview dogAgePrism spruceBruce `shouldBe` Nothing
     it "Gets the int" $
-      preview dogIntPrism dogInt `shouldBe` Just 100
+      preview dogAgePrism oldDog `shouldBe` Just 100
     it "Gets no int" $
-      preview dogStringPrism dogInt `shouldBe` Nothing
+      preview dogNamePrism oldDog `shouldBe` Nothing
     it "Changes name on dogString" $
-      preview dogStringPrism (set dogStringPrism "Bruce" dogString) `shouldBe` Just "Bruce"
+      preview dogNamePrism (set dogNamePrism "Regular Bruce" spruceBruce) `shouldBe` Just "Regular Bruce"
     it "Can't change name on dogInt" $
-      preview dogStringPrism (set dogStringPrism "Bruce" dogInt) `shouldBe` Nothing
+      preview dogNamePrism (set dogNamePrism "Bruce" oldDog) `shouldBe` Nothing
     it "Changes age on dogInt" $
-      preview dogIntPrism (set dogIntPrism 27 dogInt) `shouldBe` Just 27
+      preview dogAgePrism (set dogAgePrism 27 oldDog) `shouldBe` Just 27
     it "Can't change age on dogString" $
-      preview dogIntPrism (set dogIntPrism 27 dogString) `shouldBe` Nothing
+      preview dogAgePrism (set dogAgePrism 27 spruceBruce) `shouldBe` Nothing
+    it "Get dog age" $
+      getDogAge oldDog `shouldBe` Just 100
+    it "Get dog name" $
+      getDogName spruceBruce `shouldBe` Just "Spruce Bruce"
+  describe "Static values" $ do
+    it "Dog age" $
+      dogAge `shouldBe` Just 100
+    it "Not dog age" $
+      notDogAge `shouldBe` Nothing
+    it "Dog name" $
+      dogName `shouldBe` Just "Spruce Bruce"
+    it "Not dog name" $
+      notDogName `shouldBe` Nothing
+    it "New age" $
+      newAge `shouldBe` DogAge 27
+    it "No new age" $
+      noNewAge `shouldBe` DogName "Spruce Bruce"
+    it "initialCount" $
+      initialCount `shouldBe` Just 100
   describe "The same with sweet, sweet Lens" $ do
     it "gets port with lens" $
       view fullPortLens appData `shouldBe` 8080

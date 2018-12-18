@@ -74,26 +74,59 @@ appTitle = view titleLens appData -- = "Hello"
 
 -- And what about those Either types, can we do anything there? Sure!
 
-type Dog = Either String Int
+data DogFact = DogName String
+             | DogAge Int deriving (Show, Eq)
 
-dogString :: Dog
-dogString = Left "Dog Name"
+spruceBruce :: DogFact
+spruceBruce = DogName "Spruce Bruce"
 
-dogInt :: Dog
-dogInt = Right 100
+oldDog :: DogFact
+oldDog = DogAge 100
 
-dogStringPrism :: Prism' Dog String
-dogStringPrism = prism' Left (\e -> case e of
-                            Left a -> Just a
-                            _      -> Nothing)
+dogNamePrism :: Prism' DogFact String
+dogNamePrism = prism' DogName (\e -> case e of
+                            DogName a -> Just a
+                            _         -> Nothing)
 
-dogIntPrism :: Prism' Dog Int
-dogIntPrism = prism' Right (\e -> case e of
-                            Right b -> Just b
-                            _       -> Nothing)
+dogAgePrism :: Prism' DogFact Int
+dogAgePrism = prism' DogAge (\e -> case e of
+                            DogAge b -> Just b
+                            _        -> Nothing)
 
+getDogAge :: DogFact -> Maybe Int
+getDogAge dogFact = preview dogAgePrism dogFact
+
+getDogName :: DogFact -> Maybe String
+getDogName dogFact = preview dogNamePrism dogFact
+
+dogAge :: Maybe Int
+dogAge = getDogAge oldDog
+-- dogAge == Just 100
+
+notDogAge :: Maybe Int
+notDogAge = getDogAge spruceBruce
+-- notDogAge == Nothing
+
+dogName :: Maybe String
+dogName = getDogName spruceBruce
+-- dogName == Just "Spruce Bruce"
+
+notDogName :: Maybe String
+notDogName = getDogName oldDog
+-- notDogName == Nothing
+
+-- can change value on same side
+newAge :: DogFact
+newAge = set dogAgePrism 27 oldDog
+-- newAge == DogAge 27
+
+-- but not change the side
+noNewAge :: DogFact
+noNewAge = set dogAgePrism 27 spruceBruce
+-- noNewAge == DogName "Spruce Bruce"
 
 -- and what about combining them with our previous lens?
+
 countLens :: Lens' AppConfig (Either String Int)
 countLens = lens count (\app newVal -> app { count = newVal } )
 
@@ -114,3 +147,7 @@ fullCountError = countLens . countErrorPrism
 
 fullCountInt :: Traversal' AppConfig Int
 fullCountInt = countLens . countIntPrism
+
+initialCount :: Maybe Int
+initialCount = preview fullCountInt appData
+-- initialCount == Just 100
