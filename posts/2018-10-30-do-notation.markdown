@@ -1,5 +1,5 @@
 ---
-title: Why The Fuck Should I Care About Do Notation?
+title: Why The Hell Should I Care About Do Notation?
 ---
 
 Do notation is a strange thing. You first see it in examples of `IO ()` with something like:
