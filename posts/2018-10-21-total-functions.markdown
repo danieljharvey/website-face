@@ -1,5 +1,5 @@
 ---
-title: Total Eclipse Of The Heart
+title: Why The Hell Should I Care About Total Functions?
 ---
 
 I recently read a piece of useful advice on Twitter about total functions which I enjoyed. The advice (which I will definitely accurately source at some point in the future, lol) goes something like this:
@@ -10,8 +10,8 @@ Like all my favourite advice this sounds like it doesn't make any sense, so I fi
 
 Firstly, to clarify, a total function is a function that:
 
-1. Always returns some valid data (rather than just when it feels like doing so) and
-2. Does not go into an infinite loop.
+1.  Always returns some valid data (rather than just when it feels like doing so) and
+2.  Does not go into an infinite loop.
 
 Let's start with a non-total function. The canonical example is Head from the Haskell Prelude, which returns you the first item in a list, and looks something like this:
 
@@ -46,8 +46,8 @@ So far, so total, great stuff.
 
 However, our function is currently responsible for two things:
 
-1. Checking the inputs are even correct
-2. Getting the first value
+1.  Checking the inputs are even correct
+2.  Getting the first value
 
 Ideally, we should be able to use types to make sure this doesn't happen, and make validating that data Somebody Else's Problem.
 
