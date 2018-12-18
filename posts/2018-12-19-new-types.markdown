@@ -1,5 +1,5 @@
 ---
-title: Why the hell should I care about newtypes?
+title: Why The Hell Should I Care About Newtypes?
 ---
 
 Good question. What are `newtypes`?
@@ -18,7 +18,7 @@ frank = Dog "Frank"
 -- frank == Dog "Frank"
 ```
 
-Or we can unwrap it again and lose nothing along the way (this means the types `String` and `Dog String` are `isomorphic` in maths terms`)
+Or we can unwrap it again and lose nothing along the way (this means the types `String` and `Dog String` are `isomorphic` in maths terms)
 
 ```haskell
 name :: String
@@ -90,7 +90,7 @@ What about a nice `newtype` solution?
 newtype PositiveNum a = PositiveNum { getPositiveNum :: a } deriving (Eq, Show)
 ```
 
-Nothing to write home about so far, but the trick here is that Haskell allows us to export the type `PositiveNum` but not the constructor `PositiveNum`. That means that instead we can provide a function for making a `PositiveNum`s that does some validation. This means that, outside our module itself, there is no way to create a `PositiveNum` that doesn't make sense.
+Nothing to write home about so far, but the trick here is that Haskell allows us to export the type `PositiveNum` but not the constructor `PositiveNum`. That means that instead we can provide a function for making a `PositiveNum` that does some validation. This means that, outside our module itself, there is no way to create a `PositiveNum` that doesn't make sense.
 
 ```haskell
 makePositiveNum :: (Num a, Ord a) => a -> Maybe (PositiveNum a)
@@ -168,6 +168,7 @@ This lets us change the value inside `PositiveNum` with an `fmap` function.
 ```haskell
 calculateSalaryClever :: (Num a) => PositiveNum a -> PositiveNum a
 calculateSalaryClever = fmap (*1000)
+-- calculateSalaryClever 2 == PositiveNum 2000
 ```
 
 Or the same, but unwrap it afterwards:
@@ -175,6 +176,13 @@ Or the same, but unwrap it afterwards:
 ```haskell
 calculateSalaryClever2 :: (Num a) => PositiveNum a -> a
 calculateSalaryClever2 i = getPositiveNum (fmap (*1000) i)
+-- calculateSalaryClever2 20 == 20000
 ```
 
-Great.
+That seems pretty OK to me. Anyway, that's enough things, time for bed.
+
+Further reading:
+
+[Newtype in Haskell Wiki](https://wiki.haskell.org/Newtype)
+
+[Newtypes aren't as cool as you think](http://degoes.net/articles/newtypes-suck)

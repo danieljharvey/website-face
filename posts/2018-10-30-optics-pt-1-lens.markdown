@@ -1,5 +1,5 @@
 ---
-title: Why The Fuck Should I Care About Lens? (Part 1)
+title: Why The Hell Should I Care About Lens? (Part 1)
 ---
 
 Lenses are a thing that Haskell people talk about a lot. They bloody love a lens. Everywhere you go, lens, lens, lens. What is lens? Should we, mere mortals, care?
