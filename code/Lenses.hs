@@ -83,6 +83,15 @@ spruceBruce = DogName "Spruce Bruce"
 oldDog :: DogFact
 oldDog = DogAge 100
 
+getDogNameFromDogFact :: DogFact -> Maybe String
+getDogNameFromDogFact (DogName s) = Just s
+getDogNameFromDogFact _           = Nothing
+
+getDogAgeFromDogFact :: DogFact -> Maybe Int
+getDogAgeFromDogFact (DogAge s) = Just s
+getDogAgeFromDogFact _          = Nothing
+
+
 dogNamePrism :: Prism' DogFact String
 dogNamePrism = prism' DogName (\e -> case e of
                             DogName a -> Just a
