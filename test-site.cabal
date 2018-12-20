@@ -30,6 +30,7 @@ library
                   , State
                   , Contravariant
                   , Comonad
+                  , Traversal
                   , Validation
   hs-source-dirs:   code
   build-depends:    base == 4.*
@@ -79,6 +80,8 @@ test-suite unit-tests
                   , StateSpec
                   , ValidationSpec
                   , WriteSpec
+                  , Traversal
+                  , TraversalSpec
   build-depends: base
                 , mtl
                 , ilist
