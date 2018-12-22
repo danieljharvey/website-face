@@ -33,7 +33,7 @@ instance (Show a) => Pettable (Cat a) where
     Hand <>|<> (Cat a) = show a ++ " miaows or similar"
 
 
-calculateSalaryBad :: (Num a, Show a) => a -> a
+calculateSalaryBad :: Int -> Int
 calculateSalaryBad months = months * 1000
 
 calculateSalaryBetter :: (Num a, Show a, Ord a) => a -> Maybe a

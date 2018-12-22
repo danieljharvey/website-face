@@ -40,7 +40,7 @@ Well, the nice thing about a `newtype` is that we can use it to pass data around
 Let's calculate a salary. That seems like a plausible thing to do with a computer.
 
 ```haskell
-calculateSalaryBad :: (Num a) => a -> a
+calculateSalaryBad :: Int -> Int
 calculateSalaryBad months = months * 1000
 ```
 
