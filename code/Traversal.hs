@@ -15,10 +15,18 @@ instance Foldable MyTree where
 
 sampleTreeTotal :: Int
 sampleTreeTotal = getSum $ foldMap Sum sampleTree
--- sampleTreeTotal == 10
+-- sampleTreeTotal == 12
 
 maybeTree :: MyTree (Maybe Int)
 maybeTree = Branch (Branch (Leaf $ Just 2) (Leaf $ Just 3)) (Branch (Leaf $ Just 5) (Leaf $ Just 2))
+
+maybeAdd :: Maybe Int -> Maybe Int -> Maybe Int
+maybeAdd (Just a) (Just b) = Just (a + b)
+maybeAdd _ _ = Nothing
+
+maybeTreeTotal :: Maybe Int
+maybeTreeTotal = foldr maybeAdd (Just 0) maybeTree
+-- maybeTreeTotal == Just 12
 
 instance Functor MyTree where
   fmap f (Branch l r) = Branch (fmap f l) (fmap f r)
@@ -39,14 +47,14 @@ instance Traversable MyTree where
   traverse f (Leaf a) = Leaf <$> f a
 
 justTree :: Maybe (MyTree Int)
-justTree = traverse id maybeTree
+justTree = sequence maybeTree
 -- justTree == Just (Branch (Branch (Leaf 2) (Leaf 3)) (Branch (Leaf 5) (Leaf 2)))
 
 anotherMaybeTree :: MyTree (Maybe Int)
 anotherMaybeTree = Branch (Branch (Leaf Nothing) (Leaf $ Just 3)) (Branch (Leaf $ Just 5) (Leaf $ Just 2))
 
 nothingTree :: Maybe (MyTree Int)
-nothingTree = traverse id anotherMaybeTree
+nothingTree = sequence anotherMaybeTree
 -- nothingTree == Nothing
 
 -- traverse id = sequence
@@ -54,7 +62,7 @@ listTree :: MyTree ([Int])
 listTree = Branch (Leaf [1,2]) (Leaf [3,4])
 
 invertedListTree :: [MyTree Int]
-invertedListTree = traverse id listTree
+invertedListTree = sequence listTree
 {-
 invertedListTree ==
   [ Branch (Leaf 1) (Leaf 3)
@@ -79,15 +87,15 @@ eitherTree :: MyTree (Either String Int)
 eitherTree = Branch (Leaf $ Right 100) (Leaf $ Right 200)
 
 rightTree :: Either String (MyTree Int)
-rightTree = traverse id eitherTree
+rightTree = sequence eitherTree
 -- rightTree == Right (Branch (Leaf 100) (Leaf 200))
 
 failsTree :: Either String (MyTree Int)
-failsTree = traverse id $ Branch (Leaf $ Right 1) (Leaf $ Left "2")
+failsTree = sequence $ Branch (Leaf $ Right 1) (Leaf $ Left "2")
 -- "Left 2"
 
 failsTree2 :: Either String (MyTree Int)
-failsTree2 = traverse id $ Branch (Leaf $ Left "1") (Branch (Leaf $ Left "2") (Leaf $ Left "3"))
+failsTree2 = sequence $ Branch (Leaf $ Left "1") (Branch (Leaf $ Left "2") (Leaf $ Left "3"))
 -- "Left 1"
 
 -- validation!
