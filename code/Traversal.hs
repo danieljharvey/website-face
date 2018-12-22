@@ -2,6 +2,7 @@ module Traversal where
 
 import Data.Monoid
 import Data.Maybe
+import Data.Validation
 
 data MyTree a = Leaf a | Branch (MyTree a) (MyTree a) deriving (Show, Eq)
 
@@ -47,3 +48,53 @@ anotherMaybeTree = Branch (Branch (Leaf Nothing) (Leaf $ Just 3)) (Branch (Leaf 
 nothingTree :: Maybe (MyTree Int)
 nothingTree = traverse id anotherMaybeTree
 -- nothingTree == Nothing
+
+-- traverse id = sequence
+listTree :: MyTree ([Int])
+listTree = Branch (Leaf [1,2]) (Leaf [3,4])
+
+invertedListTree :: [MyTree Int]
+invertedListTree = traverse id listTree
+{-
+invertedListTree ==
+  [ Branch (Leaf 1) (Leaf 3)
+  , Branch (Leaf 1) (Leaf 4)
+  , Branch (Leaf 2) (Leaf 3)
+  , Branch (Leaf 2) (Leaf 4)
+  ]
+-}
+
+reversedListTree :: [MyTree Int]
+reversedListTree = traverse reverse listTree
+{-
+reversedListTree ==
+  [ Branch (Leaf 2) (Leaf 4)
+  , Branch (Leaf 2) (Leaf 3)
+  , Branch (Leaf 1) (Leaf 4)
+  , Branch (Leaf 1) (Leaf 3)
+]
+-}
+
+eitherTree :: MyTree (Either String Int)
+eitherTree = Branch (Leaf $ Right 100) (Leaf $ Right 200)
+
+rightTree :: Either String (MyTree Int)
+rightTree = traverse id eitherTree
+-- rightTree == Right (Branch (Leaf 100) (Leaf 200))
+
+failsTree :: Either String (MyTree Int)
+failsTree = traverse id $ Branch (Leaf $ Right 1) (Leaf $ Left "2")
+-- "Left 2"
+
+failsTree2 :: Either String (MyTree Int)
+failsTree2 = traverse id $ Branch (Leaf $ Left "1") (Branch (Leaf $ Left "2") (Leaf $ Left "3"))
+-- "Left 1"
+
+-- validation!
+
+validationTree :: MyTree (Validation [String] Int)
+validationTree = Branch (Leaf $ Success 100) (Branch (Leaf $ Failure ["2"]) (Leaf $ Failure ["3"]))
+
+collectFails :: Validation [String] (MyTree Int)
+collectFails = traverse id validationTree
+-- collectFails == Failure ["2","3"]
