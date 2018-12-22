@@ -42,19 +42,7 @@ maybeTree :: MyTree (Maybe Int)
 maybeTree = Branch (Branch (Leaf $ Just 2) (Leaf $ Just 3)) (Branch (Leaf $ Just 5) (Leaf $ Just 2))
 ```
 
-We could add them up with something like this:
-
-```haskell
-maybeAdd :: Maybe Int -> Maybe Int -> Maybe Int
-maybeAdd (Just a) (Just b) = Just (a + b)
-maybeAdd _ _ = Nothing
-
-maybeTreeTotal :: Maybe Int
-maybeTreeTotal = foldr maybeAdd (Just 0) maybeTree
--- maybeTreeTotal == Just 12
-```
-
-But what if we want to remove all the `Just` and `Nothing` from the `MyTree` altogether? Enter `Traversal`!
+We could add up all the values without too much trouble, but what if we want to remove all the `Just` and `Nothing` from the `MyTree` but keep the structure intact? Enter `Traversal`!
 
 ### Traversable
 
