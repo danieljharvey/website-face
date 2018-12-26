@@ -159,6 +159,8 @@ Great stuff. The key here is that not only have we acted upon the values, the wa
 
 Anyway. This barely scratches the surface, but hopefully gives you the start of an intuition for these things. Applicative does lots of things. Go find them!
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Functors, Applicative and Monads in Pictures](http://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html)

@@ -14,7 +14,7 @@ brew install stack
 
 but for other systems you will need to look at the [Stack docs](https://docs.haskellstack.org/en/stable/install_and_upgrade/).
 
-Assuming that's all gone swimmingly, let's start a new project.
+Assuming that's all gone swimmingly, let's start a new project, which we will call `simple-env`.
 
 ```bash
 stack new simple-env
@@ -304,6 +304,8 @@ stack exec simple-env-exe
 ```
 
 Great stuff. It's not much of a library, but it's a start. Next time we'll make a nicer API for fetching multiple variables at once so it's actually a bit more helpful for our users.
+
+Make sense? If not, why not [get in touch](/contact.html)?
 
 Further reading:
 

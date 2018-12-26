@@ -255,13 +255,15 @@ There are plenty of `Traversable` instances in the wild to play with, so try sma
 
 Anyhow, that's enough for now I think.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Data.Traversable](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Traversable.html)
 
 ### Bonus item: Validation
 
-The short answer is yes, and it's with a different datatype called `Validation`. We won't go into it in depth now, but it's much like an `Either` that let's you collect `Left` items together.
+If you were enjoying the `Either` example but wondering if there's a way to gather all of the `Left` values in a tree, then, firstly, yes, and secondly, it's done using a different datatype called `Validation`. We won't go into it in depth now, but it's much like an `Either` that let's you collect `Left` items together.
 
 ```haskell
 validationTree :: MyTree (Validation [String] Int)

@@ -241,6 +241,8 @@ You might notice the new type `Traversal` that has been produced by combining a 
 
 That's quite enough.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Lens by example - Prisms](https://lens-by-example.chrispenner.ca/articles/prisms/overview)

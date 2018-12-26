@@ -82,6 +82,8 @@ Like all somewhat trivial examples, perhaps this seems like a lot of work for no
 
 Anyway, that's quite enough for now I feel.
 
+Make sense? If not, [get in touch](/contact.html)!
+
 Further reading:
 
 [Are your functions total?](https://adamdrake.com/are-your-functions-total.html)

@@ -138,6 +138,8 @@ lazySorted = sort [Nicey, Poopy, Ploppy, Sloppy]
 
 Nice.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Data.Ord](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Ord.html)

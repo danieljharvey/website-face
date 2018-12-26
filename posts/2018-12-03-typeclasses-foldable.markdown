@@ -130,6 +130,8 @@ We could also very easily make a `MyAny` type which uses or (ie, `||`) which we 
 
 Anyhow. I'm bored of typing now so I guess this is it for this one.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Data.Foldable](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Foldable.html)

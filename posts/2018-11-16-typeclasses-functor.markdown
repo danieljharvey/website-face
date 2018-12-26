@@ -177,6 +177,8 @@ A few important notes and disclaimers:
 
 That's quite enough for now.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Functors, Applicative and Monads in Pictures](http://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html)

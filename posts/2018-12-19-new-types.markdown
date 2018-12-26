@@ -181,6 +181,8 @@ calculateSalaryClever2 i = getPositiveNum (fmap (*1000) i)
 
 That seems pretty OK to me. Anyway, that's enough things, time for bed.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Newtype in Haskell Wiki](https://wiki.haskell.org/Newtype)

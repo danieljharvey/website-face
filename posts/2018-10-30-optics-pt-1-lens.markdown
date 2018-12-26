@@ -192,6 +192,8 @@ newApp = over fullPortLens (+1) appData
 
 Look at all the things we've done with not too much code. We are now surely mighty hackers. A small disclaimer, the family of things that `Lens` is a part of are called `Optics`, and `Lens` is only the beginning. Next time, we'll look at another variation on `Lens` called `Prism`, and see how it let's us interact with that `Either` type we've conveniently ignored in these examples.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Thinking in Ramda: Lenses](http://randycoulman.com/blog/2016/07/12/thinking-in-ramda-lenses/)

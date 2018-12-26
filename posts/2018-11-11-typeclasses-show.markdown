@@ -163,6 +163,8 @@ It could do with a bit of sprucing up, and a few more tags, but in my by no mean
 
 (Incidentally, although this is a more fun example of `show`, I'd probably recommend just using a normal function for this kind of thing. Something classic like `renderTree :: (Show a) => Tree a -> String` maybe. This isn't strictly what the `Show` typeclass is for. There is also another type class called `Read` whose job is to turn the `String` output of `show` back into the original data type, and so making a clever `show` instance you're somewhat implicitly promising that you can turn it back somehow. This could end up being a Bad Time, and that's exactly the kind of time we don't want to have.)
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Text.Show](http://hackage.haskell.org/package/base-4.12.0.0/docs/Text-Show.html)

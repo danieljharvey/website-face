@@ -68,6 +68,8 @@ safeHeadTwiceShort a = safeHead a >>= safeHead
 
 OK, so in this case, `do notation` doesn't look so great. Oh well. Remember: clever things are interesting but they're not always good.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Do Notation in Wikibooks](https://en.wikibooks.org/wiki/Haskell/do_notation)

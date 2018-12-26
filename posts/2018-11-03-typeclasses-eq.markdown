@@ -109,6 +109,8 @@ workingNow = LazyTiny == LazyTiny
 
 Great!
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [Data.Eq](http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Eq.html)

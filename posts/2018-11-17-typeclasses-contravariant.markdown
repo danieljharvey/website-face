@@ -138,6 +138,8 @@ You will note that here we've somewhat rushed and combined the `contramap`-ing a
 
 Contravariant doesn't show up a huge amount on it's own, but it comes into it's own as part of `Profunctor` (lightning flashes, thunder, excitement!) which no doubt we'll flop towards at some unspecified future moment.
 
+Make sense? If not, why not [get in touch](/contact.html)?
+
 Further reading:
 
 [The Extended Functor Family (video)](https://www.youtube.com/watch?v=JZPXzJ5tp9w)
