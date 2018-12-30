@@ -42,6 +42,7 @@ library
                   , comonad
                   , validation
                   , contravariant
+                  , time
   default-language: Haskell2010
 
 test-suite unit-tests
@@ -67,6 +68,7 @@ test-suite unit-tests
                   , Contravariant
                   , Comonad
                   , Validation
+                  , Testing
                   , ApplicativeSpec
                   , ComonadSpec
                   , ContravariantSpec
@@ -83,6 +85,7 @@ test-suite unit-tests
                   , WriteSpec
                   , Traversal
                   , TraversalSpec
+                  , TestingSpec
   build-depends: base
                 , mtl
                 , ilist
@@ -92,6 +95,7 @@ test-suite unit-tests
                 , comonad
                 , contravariant
                 , validation
+                , time
                 , hspec
                 , QuickCheck
                 , hspec-discover
