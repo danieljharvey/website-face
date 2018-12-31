@@ -1,17 +1,29 @@
+:root {
+  --main-bg: #fff;
+  --code-bg: #f4f4f4;
+  --main-text: #333;
+  --light-text: #555;
+  --cyan: rgb(57, 153, 164);
+  --green: rgb(52, 154, 47);
+  --magenta: rgb(184, 77, 159);
+  --comments: #999;
+}
+
 html {
   font-size: 80%;
   font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
-  background-color: #222;
-  color: #eee;
+  background-color: var(--main-bg);
+  color: var(--main-text);
 }
 
 body {
   font-size: 1.6rem;
-  color: #eee;
+  color: var(--main-text);
 }
 
 header {
-  border-bottom: 0.2rem solid rgb(97, 193, 204);
+  color: var(--green);
+  border-bottom: 0.2rem solid var(--cyan);
 }
 
 nav {
@@ -20,45 +32,51 @@ nav {
 
 nav a {
   font-size: 1.8rem;
-  color: #eee;
+  color: var(--green);
   text-decoration: none;
 }
 
 a {
-  color: rgb(102, 204, 97);
+  color: var(--magenta);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 footer {
-  margin-top: 3rem;
+  margin-top: 2rem;
   padding: 1.2rem 0;
-  border-top: 0.2rem solid rgb(204, 97, 179);
+  border-top: 0.2rem solid var(--cyan);
   font-size: 1.2rem;
-  color: #ccc;
+  color: var(--light-text);
 }
 
 h1 {
   font-size: 2.4rem;
+  color: var(--main-text);
 }
 
 h2 {
   font-size: 2rem;
+  color: var(--main-text);
 }
 
 h3,
 h4,
 h5,
 h6 {
-  color: rgb(204, 97, 179);
+  color: var(--cyan);
 }
 
 article .header {
   font-size: 1.4rem;
-  font-style: italic;
-  color: #ccc;
+  color: var(--light-text);
 }
 
 .logo a {
-  color: #eee;
+  color: var(--green);
   text-decoration: none;
 }
 
@@ -74,12 +92,12 @@ code {
 
 p code,
 li code {
-  color: rgb(204, 97, 179);
+  color: var(--magenta);
   font-size: 120%;
 }
 
 pre.sourceCode {
-  background-color: #000;
+  background-color: var(--code-bg);
   padding: 10px;
   font-size: 120%;
 }
@@ -91,10 +109,10 @@ pre.sourceCode {
     padding: 0 5%;
   }
   header {
-    margin: 4.2rem 0;
+    margin: 2rem 0;
   }
   nav {
-    margin: 0 auto 3rem;
+    margin: 0 auto 2rem;
     text-align: center;
   }
   footer {
@@ -123,10 +141,10 @@ pre.sourceCode {
     padding: 0 5%;
   }
   header {
-    margin: 4.2rem 0;
+    margin: 2rem 0;
   }
   nav {
-    margin: 0 auto 3rem;
+    margin: 0 auto 2rem;
     text-align: center;
   }
   footer {
@@ -134,7 +152,7 @@ pre.sourceCode {
   }
   .logo {
     text-align: center;
-    margin: 1rem auto 3rem;
+    margin: 1rem auto 1rem;
   }
   .logo a {
     font-size: 2.4rem;
@@ -155,7 +173,7 @@ pre.sourceCode {
     padding: 0;
   }
   header {
-    margin: 0 0 3rem;
+    margin: 0 0 1.5rem;
     padding: 1.2rem 0;
   }
   nav {
@@ -180,6 +198,12 @@ pre.sourceCode {
 }
 
 /* code highlighting */
+a.sourceLine {
+  color: var(--green);
+}
+a.sourceLine:hover {
+  text-decoration: none;
+}
 .header.sourceCode,
 tr.sourceCode,
 td.lineNumbers,
@@ -195,7 +219,7 @@ table.sourceCode pre {
 td.lineNumbers {
   border-right: 1px solid #aaaaaa;
   text-align: right;
-  color: #ddd;
+  color: var(--light-text);
   padding-right: 5px;
   padding-left: 5px;
 }
@@ -203,44 +227,44 @@ td.sourceCode {
   padding-left: 5px;
 }
 .sourceCode span.kw {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
   font-weight: bold;
 }
 .sourceCode span.dt {
-  color: rgb(204, 97, 179);
+  color: var(--magenta);
 }
 .sourceCode span.dv {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
 }
 .sourceCode span.bn {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
 }
 .sourceCode span.fl {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
 }
 .sourceCode span.ch {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
 }
 .sourceCode span.st {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
 }
 .sourceCode span.co {
-  color: rgb(97, 193, 204);
+  color: var(--comments);
   font-style: italic;
 }
 .sourceCode span.ot {
-  color: rgb(97, 193, 204);
+  color: var(--magenta);
 }
 .sourceCode span.al {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
   font-weight: bold;
 }
 .sourceCode span.fu {
-  color: rgb(97, 193, 204);
+  color: var(--green);
 }
 .sourceCode span.re {
 }
 .sourceCode span.er {
-  color: rgb(97, 193, 204);
+  color: var(--cyan);
   font-weight: bold;
 }
