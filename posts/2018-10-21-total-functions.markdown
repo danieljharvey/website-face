@@ -1,5 +1,6 @@
 ---
 title: Why The Hell Should I Care About Total Functions?
+tags: haskell
 ---
 
 I recently read a piece of useful advice on Twitter about total functions which I enjoyed. The advice (which I will definitely accurately source at some point in the future, lol) goes something like this:

@@ -1,5 +1,6 @@
 ---
 title: My First Haskell Project - Part 1
+tags: haskell, stack
 ---
 
 I have not always found it clear how to get started with Haskell, and I have a small library I want to make as an experiment so I figured I'd document the process as a sort of Getting Started. The tiny library I wish to make is for reading environment variables, which can be used for database connections or similar. I use MacOS but will try not to make anything too platform specific, and link to docs where info for other systems can be found where possible.
@@ -112,7 +113,7 @@ dependencies:
 
 We don't mind what version in this case - Stack will choose us a sensible one that fits with our other dependencies, that's what it's for.
 
-Let's run 
+Let's run
 
 ```bash
 stack build

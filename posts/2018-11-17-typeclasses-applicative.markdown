@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Applicative
+tags: haskell, typeclasses
 ---
 
 In my learning of Haskell and all the associated mathematical stuff attached to it, one of the tougher conceptual cookies to crack has been the Applicative Functor.

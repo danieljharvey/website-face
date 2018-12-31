@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Foldable
+tags: haskell, typeclasses
 ---
 
 Let's think about sets of things that we want to make into one thing.

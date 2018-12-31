@@ -1,5 +1,6 @@
 ---
 title: Why The Hell Should I Care About Do Notation?
+tags: haskell
 ---
 
 Do notation is a strange thing. You first see it in examples of `IO ()` with something like:

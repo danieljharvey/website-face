@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Show
+tags: haskell, typeclasses
 ---
 
 Let's think about things.

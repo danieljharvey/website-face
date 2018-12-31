@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Traversable
+tags: haskell, typeclasses
 ---
 
 Let's think about Trees.

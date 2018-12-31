@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Contravariant
+tags: haskell, typeclasses
 ---
 
 Let's think about Predicates.
