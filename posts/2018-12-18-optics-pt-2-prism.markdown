@@ -1,5 +1,6 @@
 ---
 title: Why The Hell Should I Care About Lens? (Part 2)
+tags: haskell, optics
 ---
 
 So last time we looked at [lens](/posts/2018-10-30-optics-pt-1-lens.html) and saw had to jump into record-shaped structures and change things around like big hacker professionals. However we didn't try to change anything with a `sum type` in it, like `Either` or `Maybe` or something. What can we use for that? Only a bloody `Prism`, apparently.

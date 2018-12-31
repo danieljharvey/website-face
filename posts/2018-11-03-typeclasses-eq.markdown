@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Eq
+tags: haskell, typeclasses
 ---
 
 Let's think about horses. There are three kinds of Horse:

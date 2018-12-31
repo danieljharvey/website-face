@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Functor
+tags: haskell, typeclasses
 ---
 
 Let's think about things that might or might not happen.

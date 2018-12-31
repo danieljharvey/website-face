@@ -1,5 +1,6 @@
 ---
 title: Typeclasses - Ord
+tags: haskell, typeclasses
 ---
 
 Let's think about moods. Psychologists all agree there are only 5 real emotional states.
