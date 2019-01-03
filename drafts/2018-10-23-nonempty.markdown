@@ -1,5 +1,5 @@
 ---
-title: Semigroup, semipoint
+title: Nonempty
 ---
 
 Last time we did a terrible job of explaining a Monoid.
