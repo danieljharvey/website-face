@@ -28,6 +28,7 @@ library
                   , Free
                   , Write
                   , State
+                  , Nonempty
                   , Contravariant
                   , Comonad
                   , Traversal
@@ -65,6 +66,7 @@ test-suite unit-tests
                   , Free
                   , Write
                   , State
+                  , Nonempty
                   , Contravariant
                   , Comonad
                   , Validation
@@ -83,6 +85,7 @@ test-suite unit-tests
                   , StateSpec
                   , ValidationSpec
                   , WriteSpec
+                  , NonemptySpec
                   , Traversal
                   , TraversalSpec
                   , TestingSpec

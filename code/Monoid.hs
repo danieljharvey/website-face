@@ -1,29 +1,34 @@
 module Monoid where
 
-strConcat :: String -> String -> String
-strConcat a b = a ++ b
+-- List bits
 
-myFoldr :: (a -> b -> b) -> b -> [a] -> b
-myFoldr f def []       = def
-myFoldr f def (x : xs) = x `f` myFoldr f def xs
+listCombine :: [Int] -> [Int] -> [Int]
+listCombine a b = a ++ b
 
-output1 :: String
-output1 = myFoldr strConcat "" ["hot","dog","frog"]
+bothLists :: [Int]
+bothLists = listCombine [1,2,3] [4,5,6]
+-- bothLists == [1,2,3,4,5,6]
 
-output2 :: String
-output2 = myFoldr strConcat "" []
+emptyList :: [Int]
+emptyList = []
 
-output3 :: String
-output3 = myFoldr strConcat "sorry, no value" []
-
-output4 :: String
-output4 = myFoldr strConcat "sorry, no value" ["hot","dog","frog"]
+addNothing :: [Int]
+addNothing = listCombine [1,2,3] emptyList
+-- addNothing == [1,2,3]
 
 {-
+instance Semigroup [a] where
+  a <> b = listCombine a b
+
 instance Monoid [a] where
-    mappend a b = a <> b
-    mempty = []
+  mempty = []
 -}
+
+data MyMaybe a = Yeah a | Nope
+
+
+
+-- Sum Monoid
 
 newtype MySum a = MySum {
     getMySum :: a
@@ -38,6 +43,7 @@ instance (Num a) => Monoid (MySum a) where
 ten :: Int
 ten = getMySum $ MySum 1 <> MySum 7 <> MySum 2
 
+-- Product Monoid
 
 newtype MyProduct a = MyProduct {
     getMyProduct :: a
@@ -51,5 +57,3 @@ instance (Num a) => Monoid (MyProduct a) where
 
 sixtySix :: Int
 sixtySix = getMyProduct $ MyProduct 11 <> MyProduct 2 <> MyProduct 3
-
-data MyMaybe a = Yeah a | Nope
