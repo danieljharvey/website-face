@@ -25,6 +25,8 @@ const maxNo = [1, 2, 3, 4].reduce((highest, item) => {
 // maxNo == 4
 ```
 
+### Definition
+
 So in Haskell we have the very similar `foldr` with the following signature:
 
 ```haskell

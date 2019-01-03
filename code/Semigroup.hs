@@ -1,6 +1,5 @@
 module Semigroup where
 
-
 -- lists
 
 firstList :: [Int]
@@ -57,7 +56,33 @@ anotherSixtySix :: Int
 anotherSixtySix = getMyProduct $ MyProduct 11 <> (MyProduct 2 <> MyProduct 3)
 -- anotherSixtySix = 66
 
--- MyString
+-- MyMaybe
+
+data MyMaybe a = Yeah a | Nope deriving (Show, Eq)
+
+instance (Semigroup a) => Semigroup (MyMaybe a) where
+  (Yeah a) <> (Yeah b) = Yeah (a <> b)
+  a        <> Nope     = a
+  Nope     <> b        = b
+
+nah :: MyMaybe String
+nah = Nope <> Nope
+-- nah == Nope
+
+first :: MyMaybe String
+first = Yeah "Totally" <> Nope
+-- first == Yeah "Totally"
+
+second :: MyMaybe String
+second = Nope <> Yeah "Great"
+-- second == Yeah "Great"
+
+both :: MyMaybe String
+both = Yeah "Totally" <> Yeah "Great"
+-- both = Yeah "TotallyGreat"
+
+
+
 
 newtype MyString = MyString {
     getMyString :: String
@@ -73,19 +98,3 @@ allTheThings = getMyString $ MyString "All" <> MyString "The" <> MyString "Thing
 otherAllTheThings :: String
 otherAllTheThings = getMyString $ MyString "All" <> (MyString "The" <> MyString "Things")
 -- otherAllTheThings = "AllTheThings"
-
--- non empty list
-
-data NonEmpty a = NonEmpty a [a] deriving (Show, Eq)
-
-instance Semigroup (NonEmpty a) where
-    (NonEmpty a as) <> (NonEmpty b bs) = NonEmpty a $ as <> [b] <> bs
-
-first :: NonEmpty Int
-first = NonEmpty 1 [2,3,4]
-
-second :: NonEmpty Int
-second = NonEmpty 5 [6,7,8]
-
-third :: NonEmpty Int
-third = first <> second
