@@ -1,5 +1,5 @@
 ---
-title: What the hell is a typeclass anyway?
+title: Why The Hell Should I Care About Typeclasses?
 tags: haskell, typeclasses
 ---
 
@@ -138,7 +138,7 @@ Therefore...
 
 ### A typeclass is a way of categorising things based not on what they are but what they can and can't do.
 
-(Thanks [Riku](https://okay.codes/) for helping me put that more succinctly. You may find it hard to believe that I have a tendency to ramble)
+(Thanks [Riku](https://okay.codes/) for helping me put that more succinctly. You may find it hard to believe that I have a tendency to ramble).
 
 Make sense? If not, why not [get in touch](/contact.html)?
 
