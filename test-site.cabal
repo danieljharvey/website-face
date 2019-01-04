@@ -22,6 +22,7 @@ library
                   , TotalEclipse
                   , Newtypes
                   , Applicative
+                  , Alternative
                   , DoNotation
                   , Foldable
                   , Form
@@ -60,6 +61,7 @@ test-suite unit-tests
                   , TotalEclipse
                   , Newtypes
                   , Applicative
+                  , Alternative
                   , DoNotation
                   , Foldable
                   , Form
@@ -72,6 +74,7 @@ test-suite unit-tests
                   , Validation
                   , Testing
                   , ApplicativeSpec
+                  , AlternativeSpec
                   , ComonadSpec
                   , ContravariantSpec
                   , DoSpec
