@@ -2,23 +2,29 @@ module Monoid where
 
 -- List bits
 
-listCombine :: [Int] -> [Int] -> [Int]
-listCombine a b = a ++ b
+combineList :: [[a]] -> [a]
+combineList (a:as) = a ++ (combineList as)
 
-bothLists :: [Int]
-bothLists = listCombine [1,2,3] [4,5,6]
--- bothLists == [1,2,3,4,5,6]
+great :: [Int]
+great = combineList1 [[1,2,3],[4,5,6]]
+-- great == [1,2,3,4,5,6]
 
-emptyList :: [Int]
-emptyList = []
+{-
+error :: [Int]
+error = combineList []
+-}
 
-addNothing :: [Int]
-addNothing = listCombine [1,2,3] emptyList
--- addNothing == [1,2,3]
+ok :: [Int]
+ok = combineList1 []
+-- ok == []
+
+combineList1 :: [[a]] -> [a]
+combineList1 [] = []
+combineList1 (a:as) = a ++ (combineList1 as)
 
 {-
 instance Semigroup [a] where
-  a <> b = listCombine a b
+  a <> b = a ++ b
 
 instance Monoid [a] where
   mempty = []
