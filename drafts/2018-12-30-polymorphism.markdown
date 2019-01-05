@@ -12,4 +12,6 @@ title: Why The Hell Should I Care About Polymorphism?
 
 ## Testing IO example
 
+## Testing IO with FakeIO typeclass instead of injection
+
 ## end
