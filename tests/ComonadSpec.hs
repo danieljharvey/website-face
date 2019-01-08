@@ -30,4 +30,10 @@ spec = do
         getBattenType (First, First) `shouldBe` Pink
     it "seems ok" $
         getBattenType (Middle, First) `shouldBe` Other
-
+  describe "Grid" $ do
+    it "Gets 0,0" $
+      getGridItem startGrid (0,0) `shouldBe` 0
+    it "Gets 2,2" $
+      getGridItem startGrid (2,2) `shouldBe` 1
+    it "Gets 5,5" $
+      getGridItem startGrid (5,5) `shouldBe` 0

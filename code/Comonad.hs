@@ -72,4 +72,22 @@ data BattenType = Pink | Other deriving (Eq, Show)
 getBattenType :: Location -> BattenType
 getBattenType (x, y) = if x == y then Pink else Other
 
+{- yeah -}
 
+type Grid = [[Int]]
+
+startGrid :: Grid
+startGrid = [ [0,0,1,0,0]
+            , [0,0,1,0,0]
+            , [1,1,1,1,1]
+            , [0,0,1,0,0]
+            , [0,0,1,0,0]
+            ]
+
+type Point = (Int, Int)
+
+getGridItem :: Grid -> Point -> Int
+getGridItem grid (x,y) = col !! x' where
+  col = grid !! y'
+  x' = x `mod` 5
+  y' = y `mod` 5
