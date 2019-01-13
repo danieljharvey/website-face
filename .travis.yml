@@ -13,15 +13,25 @@ install:
  - unset CC
  - export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH
  - ./.travis/install-stack.sh
+ - cd purescript
+ - yarn install
+ - cd ..
 
 script:
  - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
  - GHC_OPTIONS="-Werror"
  - |
    set -ex
-   # Run tests
+
+   # Run Haskell tests
    stack --no-terminal test --ghc-options="$GHC_OPTIONS"
    set +ex
+
+   # run Purescript tests
+   cd purescript
+   yarn test
+   cd ..
+
 after_success:
  - |
    # Build and ship binary
