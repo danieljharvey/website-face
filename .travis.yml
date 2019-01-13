@@ -13,7 +13,9 @@ install:
  - unset CC
  - export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH
  - ./.travis/install-stack.sh
+ - ./.travis/install-nvm.sh
  - cd purescript
+ - nvm install v11.6.0
  - npm install yarn
  - yarn install
  - cd ..
