@@ -17,6 +17,7 @@ library
                   , Ord
                   , Show
                   , Functor
+                  , Bifunctor
                   , Monoid
                   , Semigroup
                   , TotalEclipse
@@ -56,6 +57,7 @@ test-suite unit-tests
                   , Ord
                   , Show
                   , Functor
+                  , Bifunctor
                   , Monoid
                   , Semigroup
                   , TotalEclipse
@@ -81,6 +83,7 @@ test-suite unit-tests
                   , FoldableSpec
                   , FormSpec
                   , FunctorSpec
+                  , BifunctorSpec
                   , LensesSpec
                   , MonoidSpec
                   , NewtypesSpec
