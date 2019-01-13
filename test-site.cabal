@@ -35,7 +35,7 @@ library
                   , Comonad
                   , Traversal
                   , Validation
-  hs-source-dirs:   code
+  hs-source-dirs:   code/haskell
   build-depends:    base == 4.*
                   , lens
                   , free
@@ -51,7 +51,7 @@ library
 test-suite unit-tests
   type:          exitcode-stdio-1.0
   main-is:       Spec.hs
-  hs-source-dirs: tests, code
+  hs-source-dirs: tests/haskell, code/haskell
   other-modules:  Lenses
                   , Eq
                   , Ord
