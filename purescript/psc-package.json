@@ -6,6 +6,8 @@
     "console",
     "effect",
     "prelude",
-    "psci-support"
+    "psci-support",
+    "test-unit",
+    "identity"
   ]
 }

@@ -16,6 +16,7 @@
     "postinstall": "yarn psc-package",
     "psc-package": "psc-package install",
     "test": "pulp test",
-    "test:watch": "pulp -w test"
+    "test:watch": "pulp -w test",
+    "repl": "pulp repl"
   }
 }
