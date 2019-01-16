@@ -37,6 +37,7 @@ web/releases.markdown
 /purescript/output/
 /purescript/generated-docs/
 /purescript/.psc-package/
+/purescript/.psci_modules/
 /.psc*
 /.purs*
 /.psa*
