@@ -21,3 +21,6 @@ spec =
         testableLunch (pure testTime) `shouldBe` Identity False
       it "runs isItLunchTime2" $
         testableLunch (pure lunchTestTime) `shouldBe` Identity True
+    describe "testClassyLunch" $
+      it "Uses the identity one" $
+        testClassyLunch `shouldBe` Identity True
