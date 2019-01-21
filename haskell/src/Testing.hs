@@ -1,8 +1,11 @@
 module Testing where
 
-import           Control.Monad.Identity
+import Control.Monad.Identity
+import Control.Monad.Reader
+import Data.Coerce
+import Control.Applicative
 
-import Data.Time.Clock
+import Data.Time.Clock as Clock
 import Data.Time.Calendar
 import Data.Time.Format
 import Data.Time.LocalTime
@@ -25,7 +28,7 @@ getHour = todHour . timeToTimeOfDay . utctDayTime
 
 -- simplest version
 isItLunchTime :: IO Bool
-isItLunchTime = (\hr -> hr >= 12 && hr <= 14) <$> getHour <$> getCurrentTime
+isItLunchTime = (\hr -> hr >= 12 && hr <= 14) <$> getHour <$> Clock.getCurrentTime
 
 -- let's have the IO function passed in instead
 injectableLunch :: IO UTCTime -> IO Bool
@@ -49,4 +52,19 @@ testIsLunch = testableLunch (pure lunchTestTime)
 -- now we have a new version of the function to use in code
 -- which is covered in tests
 isItLunchTime3 :: IO Bool
-isItLunchTime3 = testableLunch getCurrentTime
+isItLunchTime3 = testableLunch Clock.getCurrentTime
+
+
+
+
+-- another version
+class Monad m => MonadTime m where
+  getTheTimePlease :: m UTCTime
+
+-- for REAL
+instance MonadTime IO where
+  getTheTimePlease = Clock.getCurrentTime
+
+-- for testing
+instance MonadTime Identity where
+  getTheTimePlease = pure lunchTestTime
