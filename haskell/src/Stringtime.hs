@@ -1,5 +1,7 @@
 module Stringtime where
 
+{- Adding a comment -}
+
 data Stuff
   = Stuff
       { stName :: String
