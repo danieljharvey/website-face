@@ -32,6 +32,7 @@ library
                   , State
                   , Nonempty
                   , Contravariant
+                  , Stringtime
                   , Comonad
                   , Traversal
                   , Validation
