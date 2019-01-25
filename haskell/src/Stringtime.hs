@@ -3,10 +3,13 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 module Stringtime where
 
+import Data.Map.Lazy
 import Data.Kind
+import Data.Text (Text, intercalate)
 
 data Stuff
   = Stuff
@@ -34,10 +37,10 @@ render s ts
 --
 
 data SwitchState = On | Off
-  deriving (Enum, Bounded, Show) 
+  deriving (Enum, Bounded, Show, Eq) 
 
 data FocusState = NotFocused | Focused | Blurred
-  deriving (Enum, Bounded, Show)
+  deriving (Enum, Bounded, Show, Eq)
 
 -- bum
 
@@ -68,6 +71,28 @@ instance (CartesianProductino as, Bounded a, Enum a) => CartesianProductino (a '
     xs <- cartesianLaddo
     pure (HCons x xs)
 
+--
+
+type CSS = [Text]
+type Classname = Text
+
+renderCSS :: Classname -> CSS -> Text
+renderCSS cls css
+  = "." <> cls <> " { " <> (intercalate " ;" css) <> "} "
+
+-- k props, v class
+type ClassMap props = Map props Classname
+
+type TitleStyle = HList '[SwitchState, FocusState]
+
+createTitleStyles :: TitleStyle -> CSS
+createTitleStyles (HCons switch (HCons focus _)) 
+  =  [ "background-color: " <> (if switch == On then "green" else "red") ]
+  <> [ "border: " <> (if focus == Focused then "10px black solid" else "0") ]
+
+
+
+type StyleMap = Map String CSS
 
   {-
 data Dict (c :: Constraint) where
@@ -103,11 +128,6 @@ class TypeToHList (x :: Type) (xs :: [Type]) where
   convert :: x -> HList xs
 
 generate :: (Generic x, TypeToList x xs, CartesianProductino xs) => [x]
-
-type TitleStyle = HList '[SwitchState, FocusState]
-
-blah :: TitleStyles -> CSS
-blah (HCons switch (HCons focus _)) = undefined
-
+y
 -}
 

@@ -44,7 +44,9 @@ library
                   , ilist
                   , bifunctors
                   , comonad
+                  , text
                   , validation
+                  , containers
                   , contravariant
                   , time
   default-language: Haskell2010
@@ -105,6 +107,7 @@ test-suite unit-tests
                 , comonad
                 , contravariant
                 , validation
+                , containers
                 , time
                 , hspec
                 , QuickCheck
