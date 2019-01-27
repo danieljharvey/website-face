@@ -27,8 +27,8 @@ addStuffUp (a : as) = a + addStuffUp as
 -- addStuffUp [1,2,3] == 6
 
 
-testTime :: Clock.UTCTime
-testTime
+baseTestTime :: Clock.UTCTime
+baseTestTime
   = Clock.UTCTime
       { Clock.utctDay     = Cal.ModifiedJulianDay 12000
       , Clock.utctDayTime = 0
@@ -36,11 +36,11 @@ testTime
 
 lunchTestTime :: Clock.UTCTime
 lunchTestTime
-  = testTime { Clock.utctDayTime = 44000 }
+  = baseTestTime { Clock.utctDayTime = 44000 }
 
 endLunchTestTime :: Clock.UTCTime
 endLunchTestTime
-  = testTime { Clock.utctDayTime = 52000 }
+  = baseTestTime { Clock.utctDayTime = 52000 }
 
 type Hour = Int
 
@@ -71,7 +71,7 @@ testableLunch getTime
 
 -- now we can test this code with a much safer monad
 testNotLunch :: Identity Bool
-testNotLunch = testableLunch (pure testTime)
+testNotLunch = testableLunch (pure baseTestTime)
 -- Identity False
 
 -- now we can test this code with a much safer monad
