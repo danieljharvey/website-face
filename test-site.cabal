@@ -32,6 +32,7 @@ library
                   , State
                   , Nonempty
                   , Contravariant
+                  , Stringtime
                   , Comonad
                   , Traversal
                   , Validation
@@ -43,7 +44,10 @@ library
                   , ilist
                   , bifunctors
                   , comonad
+                  , text
                   , validation
+                  , containers
+                  , hashable
                   , contravariant
                   , time
   default-language: Haskell2010
@@ -104,6 +108,7 @@ test-suite unit-tests
                 , comonad
                 , contravariant
                 , validation
+                , containers
                 , time
                 , hspec
                 , QuickCheck
