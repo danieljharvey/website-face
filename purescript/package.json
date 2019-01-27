@@ -17,6 +17,8 @@
     "psc-package": "psc-package install",
     "test": "pulp test",
     "test:watch": "pulp -w test",
-    "repl": "pulp repl"
+    "repl": "pulp repl",
+    "pscid": "pscid src/Main.purs",
+    "pscid:test": "pscid test/Main.purs"
   }
 }

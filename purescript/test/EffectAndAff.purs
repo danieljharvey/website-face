@@ -1,21 +1,14 @@
 module Tests.EffectAndAff (tests) where
 
 import Prelude
-
-import Test.Unit (suite, test, timeout)
-import Test.Unit.Main (runTest)
+import Control.Monad.Free (Free)
+import Test.Unit (suite, test, TestF)
 import Test.Unit.Assert as Assert
 
+import EffectAndAff (affTimer)
 
-import EffectAndAff (callback)
-
-
-
-
+tests :: Free TestF Unit
 tests =
-  suite "sync code" do
-    test "arithmetic" do
-      Assert.assert "2 + 2 should be 4" $ (2 + 2) == 4
-      Assert.assertFalse "2 + 2 shouldn't be 5" $ (2 + 2) == 5
-      Assert.equal 4 (2 + 2)
-      Assert.expectFailure "2 + 2 shouldn't be 5" $ Assert.equal 5 (2 + 2)
+  suite "EffectAndAff" do
+    test "Aff" do
+      (affTimer 100) >>= (\answer -> Assert.equal answer 100)
