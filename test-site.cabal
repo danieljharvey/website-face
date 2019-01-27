@@ -47,6 +47,7 @@ library
                   , text
                   , validation
                   , containers
+                  , hashable
                   , contravariant
                   , time
   default-language: Haskell2010
