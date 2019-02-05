@@ -16,3 +16,7 @@ main :: Effect Unit
 ```
 
 Seems quite similar, however, whilst `IO` blocks execution, `Effect` doesn't.
+Therefore if we want to have asynchronous code we end up using callbacks, which
+can quickly get ugly.
+
+
