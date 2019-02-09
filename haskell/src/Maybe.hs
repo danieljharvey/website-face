@@ -3,6 +3,9 @@ module Maybe where
 import Prelude hiding (Maybe(..))
 import Control.Applicative
 import Control.Monad.Fail
+import Control.Monad
+import Control.Monad.Zip
+import Control.Monad.Trans.Class
 
 data Maybe a = Just a | Nothing
   deriving (Eq, Ord, Show)
@@ -52,5 +55,25 @@ instance Traversable Maybe where
   traverse _ Nothing  = pure Nothing
   traverse f (Just a) = fmap Just (f a)
 
+-- provides a general purpose way of failing a computation
 instance MonadFail Maybe where
   fail _ = Nothing
+
+-- it's just Alternative again!
+instance MonadPlus Maybe where
+  mzero = Nothing
+
+  mplus (Just a) _ = Just a
+  mplus (Nothing) (Just b) = Just b
+  mplus _ _ = Nothing  
+
+-- a monad generalising zipLists (combining two sets of things into one)
+instance MonadZip Maybe where
+  mzipWith = liftA2
+
+-- Our MaybeT monad transformer
+newtype MaybeT m a
+  = MaybeT { runMaybeT :: m (Maybe a) }
+
+
+

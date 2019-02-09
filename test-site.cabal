@@ -51,6 +51,7 @@ library
                   , hashable
                   , contravariant
                   , time
+                  , transformers
   default-language: Haskell2010
 
 test-suite unit-tests
@@ -113,6 +114,7 @@ test-suite unit-tests
                 , validation
                 , containers
                 , time
+                , transformers
                 , hspec
                 , QuickCheck
                 , hspec-discover
