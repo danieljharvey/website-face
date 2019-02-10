@@ -1,11 +1,12 @@
 module Maybe where
 
-import Prelude hiding (Maybe(..))
+import Prelude hiding (Maybe(..), fail)
 import Control.Applicative
 import Control.Monad.Fail
-import Control.Monad
+import Control.Monad hiding (fail)
 import Control.Monad.Zip
 import Control.Monad.Trans.Class
+import Control.Monad.IO.Class
 
 data Maybe a = Just a | Nothing
   deriving (Eq, Ord, Show)
@@ -75,5 +76,69 @@ instance MonadZip Maybe where
 newtype MaybeT m a
   = MaybeT { runMaybeT :: m (Maybe a) }
 
+instance MonadTrans MaybeT where
+  lift = MaybeT . liftM Just
 
+-- functor instance
+instance (Functor m) => Functor (MaybeT m) where
+  fmap f a = MaybeT mapped
+    where
+      mapped
+        = (fmap . fmap) f value
+      
+      value
+        = runMaybeT a
 
+-- applicative instance
+instance (Monad m) => Applicative (MaybeT m) where
+  pure a = MaybeT (pure (Just a))
+  
+  maybeTF <*> maybeTA = MaybeT $ do
+    maybeF <- runMaybeT maybeTF
+    case maybeF of
+     Nothing -> pure Nothing
+     Just f  -> do
+       maybeA <- runMaybeT maybeTA
+       case maybeA of
+         Nothing -> pure Nothing
+         Just a  -> pure (Just (f a)) 
+
+instance (Monad m) => Monad (MaybeT m) where
+  return = pure
+
+  x >>= f = MaybeT $ do
+    value <- runMaybeT x
+    case value of
+      Nothing -> pure Nothing
+      Just a  -> runMaybeT (f a)
+
+instance (Foldable m) => Foldable (MaybeT m) where
+  foldMap f (MaybeT a) = foldMap (foldMap f) a
+
+instance (Traversable m) => Traversable (MaybeT m) where
+  traverse f (MaybeT a) = MaybeT <$> traverse (traverse f) a
+
+instance (Functor m, Monad m) => Alternative (MaybeT m) where
+  empty = MaybeT $ pure Nothing
+
+  a <|> b = MaybeT $ do
+    a' <- runMaybeT a
+    case a' of
+      Nothing -> runMaybeT b
+      Just _  -> pure a'
+
+-- allow a computation to be failed
+instance (Monad m) => MonadFail (MaybeT m) where
+  fail _ = MaybeT $ pure Nothing
+
+-- if M does IO, then this can do IO too
+instance (MonadIO m) => MonadIO (MaybeT m) where
+  liftIO = lift . liftIO
+
+-- get line from terminal, check it's 1 char or more
+getNiceLine :: MaybeT IO String
+getNiceLine = do
+  line <- liftIO readLn
+  if (length line) > 0
+    then pure line 
+    else fail "String too short"

@@ -7,6 +7,9 @@ import           Control.Applicative
 import           Prelude hiding (Maybe(..), fail)
 import           Maybe
 import           Test.Hspec
+import           Control.Monad.Identity hiding (fail)
+
+type MaybeIdentity = MaybeT Identity
 
 -- spec :: IO ()
 spec =
@@ -63,4 +66,17 @@ spec =
       mzip (Just 1) (Just 2) `shouldBe` Just (1,2)
     it "MonadZip mzipWith fail" $
       mzip (Just 1) Nothing `shouldBe` (Nothing :: Maybe (Int, Int))
-
+    it "MaybeT Fmaps" $
+      runMaybeT (fmap (+1) (pure 1 :: MaybeIdentity Int)) 
+        `shouldBe` (Identity (Just 2) :: Identity (Maybe Int))
+    it "MaybeT pure" $
+      runMaybeT (pure 1 :: MaybeIdentity Int) `shouldBe` Identity (Just 1)
+    it "MaybeT <*>" $
+      (runMaybeT $ (pure (+1) <*> pure 1)) `shouldBe` Identity (Just 2)
+    it "MaybeT monad" $ do
+      p <- pure (1 :: Int)
+      p `shouldBe` 1
+    it "MaybeT folds" $
+      foldr (+) 0 (pure 1 :: MaybeIdentity Int) `shouldBe` 1
+    it "MaybeT alternative" $
+      runMaybeT (empty <|> pure 1) `shouldBe` Identity (Just 1)
