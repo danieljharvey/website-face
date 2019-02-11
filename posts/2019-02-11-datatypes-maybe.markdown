@@ -73,11 +73,17 @@ instance (Semigroup a) => Monoid (Maybe a) where
   mempty = Nothing
 ```
 
+Now carrying all these wrapped values around is great, but at some point we may
+want to extract values from these `Maybe` values, so we use `foldable`. Note
+the `a` in the `Nothing` version of the function - this makes the user of the
+typeclass provide a default value so that we don't end up without a value for
+`Nothing`.
 
--- think of this as combining a list that may have one or zero items
+```haskell
 instance Foldable Maybe where
   foldr _ a Nothing  = a
   foldr f a (Just b) = f b a
+```
 
 instance Alternative Maybe where
   empty                 = Nothing
