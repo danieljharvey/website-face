@@ -1,0 +1,49 @@
+module CoordSemigroup where
+
+import Prelude
+
+newtype Coord = Coord
+    { x       :: Int
+    , y       :: Int
+    , offsetX :: Int
+    , offsetY :: Int
+    }
+
+derive newtype instance eqCoord :: Eq Coord
+derive newtype instance ordCoord :: Ord Coord
+derive newtype instance showCoord :: Show Coord
+
+instance semigroupCoord :: Semigroup Coord where
+  append (Coord fst) (Coord snd)
+    = Coord { x: fst.x + snd.x
+            , y: fst.y + snd.y
+            , offsetX: fst.offsetX + snd.offsetX
+            , offsetY: fst.offsetY + snd.offsetY
+            }
+
+instance monoidCoord :: Monoid Coord where
+  mempty = Coord { x: 0, y: 0, offsetX: 0, offsetY: 0 }
+
+invert :: Coord -> Coord
+invert (Coord coord)
+  = Coord { x: (-1) * coord.x
+          , y: (-1) * coord.y
+          , offsetX: (-1) * coord.offsetX
+          , offsetY: (-1) * coord.offsetY
+          }
+
+createCoord :: Int -> Int -> Coord
+createCoord x y = Coord { x, y, offsetX: 0, offsetY: 0 }
+
+createFullCoord :: Int -> Int -> Int -> Int -> Coord
+createFullCoord x y offsetX offsetY
+  = Coord { x, y, offsetX, offsetY }
+
+createMoveCoord :: Int -> Coord -> Coord
+createMoveCoord amount (Coord coord)
+  = createFullCoord 0 0 newX newY
+    where
+      newX
+        = amount * coord.x
+      newY
+        = amount * coord.y
