@@ -2,37 +2,42 @@ module Free where
 
 import           Control.Monad.Free
 import           Prelude
+import           System.Exit
 
-data ConsoleF a
-  = PutStrLn String a
-  | GetLine (String -> a)
+data ConsoleF next
+  = Write String next
+  | Read (String -> next)
+  | Stop
 
 instance Functor ConsoleF where
-    fmap f (PutStrLn s a) = PutStrLn s (f a)
-    fmap f (GetLine g)    = GetLine (f . g)
+    fmap f (Write s next) = Write s (f next)
+    fmap f (Read next)    = Read (f . next)
+    fmap _ Stop           = Stop
 
-type Console = Free ConsoleF
+fWrite :: String -> Free ConsoleF ()
+fWrite str = liftF $ Write str ()
 
-fPutStrLn :: String -> Console ()
-fPutStrLn s = liftF (PutStrLn s ())
+fRead :: Free ConsoleF String
+fRead = liftF $ Read id
 
-fGetLine :: Console String
-fGetLine = liftF (GetLine id)
+fStop :: Free ConsoleF a
+fStop = liftF Stop
 
--- Console in IO:
--- consoleIO :: ConsoleF () -> IO ()
-consoleIO (PutStrLn s v) = do
-  Prelude.putStrLn s
-  pure v
-consoleIO (GetLine cb) = do
-  s <- Prelude.getLine
-  pure (cb s)
-
-consoleProg :: Console ()
+consoleProg :: Free ConsoleF ()
 consoleProg = do
-    fPutStrLn "What the fuck?"
-    a <- fGetLine
-    fPutStrLn $ "Sure, I guess? " ++ a
-    b <- fGetLine
-    fPutStrLn "bum"
+    fWrite "What is your name?"
+    a <- fRead
+    fWrite $ "Sure? " ++ a
+    b <- fRead
+    fWrite "Great."
+    fStop
+
+interpretIO :: Free ConsoleF a -> IO a
+interpretIO (Pure r) = return r
+interpretIO (Free (Write s next))
+  = Prelude.putStrLn s >> interpretIO next
+interpretIO (Free (Read next))
+  = Prelude.getLine >>= interpretIO . next
+interpretIO (Free Stop)
+  = exitSuccess
 
