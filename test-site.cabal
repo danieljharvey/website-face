@@ -18,6 +18,7 @@ library
                   , Show
                   , Functor
                   , Bifunctor
+                  , Profunctor
                   , Monoid
                   , Semigroup
                   , TotalEclipse
@@ -36,6 +37,7 @@ library
                   , Comonad
                   , Traversal
                   , Maybe
+                  , Either
                   , Validation
   hs-source-dirs:   haskell/src
   build-depends:    base == 4.*
@@ -65,6 +67,7 @@ test-suite unit-tests
                   , Show
                   , Functor
                   , Bifunctor
+                  , Profunctor
                   , Monoid
                   , Semigroup
                   , TotalEclipse
@@ -84,6 +87,8 @@ test-suite unit-tests
                   , Testing
                   , Maybe
                   , MaybeSpec
+                  , Either
+                  , EitherSpec
                   , ApplicativeSpec
                   , AlternativeSpec
                   , ComonadSpec
@@ -93,6 +98,7 @@ test-suite unit-tests
                   , FormSpec
                   , FunctorSpec
                   , BifunctorSpec
+                  , ProfunctorSpec
                   , LensesSpec
                   , MonoidSpec
                   , NewtypesSpec
