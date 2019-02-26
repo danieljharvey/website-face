@@ -44,6 +44,7 @@ library
                   , mtl
                   , ilist
                   , bifunctors
+                  , profunctors
                   , comonad
                   , text
                   , validation
@@ -109,6 +110,7 @@ test-suite unit-tests
                 , lens
                 , free
                 , bifunctors
+                , profunctors
                 , comonad
                 , contravariant
                 , validation
