@@ -1,35 +1,56 @@
+---
+title: Typeclasses - Profunctor
+tags: haskell, typeclasses
+---
+
+Hello.
+
 module Profunctor where
 
-import           Data.Profunctor
+import Data.Profunctor
+
+{-
+
+import Data.Profunctor
+
+Data.Profunctor> :i Profunctor
+
+class Profunctor (p :: _ -> _ -> \*) where
+dimap :: (a -> b) -> (c -> d) -> p b c -> p a d
+lmap :: (a -> b) -> p b c -> p a c
+rmap :: (b -> c) -> p a b -> p a c
+{-# MINIMAL dimap | lmap, rmap #-}
+
+-}
 
 newtype FuncBox b c
-  = FuncBox { runFuncBox :: b -> c }
+= FuncBox { runFuncBox :: b -> c }
 
 instance Profunctor FuncBox where
-  dimap before after (FuncBox f)
-    = FuncBox (after . f . before)
+dimap before after (FuncBox f)
+= FuncBox (after . f . before)
 
 data Animal = Horse | Dog | Cat
-  deriving (Show)
+deriving (Show)
 
 repeatEgg :: Int -> [String]
 repeatEgg s
-  = replicate s "Egg"
+= replicate s "Egg"
 
 length' :: FuncBox String Int
 length' = FuncBox length
 
 leftMapped :: FuncBox Animal Int
 leftMapped
-  = lmap show length'
+= lmap show length'
 
 rightMapped :: FuncBox String String
 rightMapped
-  = rmap show length'
+= rmap show length'
 
 dimapped :: FuncBox Animal [String]
 dimapped
-  = dimap show repeatEgg length'
+= dimap show repeatEgg length'
 
 one :: Int
 one = runFuncBox length' "horses"
