@@ -2114,9 +2114,9 @@ punycode@^1.3.2:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-purescript@0.12.2:
-  version "0.12.2"
-  resolved "https://registry.yarnpkg.com/purescript/-/purescript-0.12.2.tgz#801b8c390232252601dcf794ab21e28ab9c2ee09"
+purescript@0.12.3:
+  version "0.12.3"
+  resolved "https://registry.yarnpkg.com/purescript/-/purescript-0.12.3.tgz#fd380af74625820548a212abee3d634b57b61b7d"
   dependencies:
     install-purescript-cli "^0.4.0 || ^0.3.0"
 
