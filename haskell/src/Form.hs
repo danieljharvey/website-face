@@ -1,20 +1,58 @@
+{-# LANGUAGE DeriveFunctor #-}
+
 module Form where
 
-go :: IO ()
-go = print $ ui twoNumsForm (10,12)
 
-data UI = Div UI | Row [UI] | Col [UI] | Item String deriving (Show, Eq)
+data UI action
+  = Empty
+  | Container [UI action]
+  | Item String action
+  deriving (Show, Eq, Functor)
 
-data Form i a = Form { ui :: i -> UI, result :: i -> a }
+instance Semigroup (UI a) where
+  Empty        <> b            = b
+  a            <> Empty        = a
+  Container as <> Item s b     = Container (as <> [Item s b])
+  Item s a     <> Container bs = Container ([Item s a] <> bs)
+  a            <> b            = Container [a, b]
 
-twoNumsForm :: Form (Int, Int) Int
-twoNumsForm = Form { ui = uncurry twoNumsUI, result = twoNumsResult}
+instance Monoid (UI a) where
+  mempty = Empty
 
-twoNumsResult :: (Int, Int) -> Int
-twoNumsResult = uncurry (+)
+data Form state action
+  = Form { render   :: state -> UI action
+         , process  :: action -> state -> state
+         , validate :: state -> Bool
+         }
 
-twoNumsUI :: Int -> Int -> UI
-twoNumsUI a b = Div $ Col [ Item $ show a
-        , Item $ show b
-        ]
+newtype CounterState
+  = CounterState { weight :: Int }
 
+data CounterAction
+  = Increase
+  | Decrease
+  deriving (Show)
+
+counterProcess :: CounterAction -> CounterState -> CounterState
+counterProcess Increase st = st { weight = weight st + 1 }
+counterProcess Decrease st = st { weight = weight st - 1 }
+
+counterValidate :: CounterState -> Bool
+counterValidate st
+  = weight st > 40 && weight st < 100
+
+counterRender :: CounterState -> UI CounterAction
+counterRender st
+  = Container [ Item "down" Decrease, Item "up" Increase ]
+
+form :: Form CounterState CounterAction
+form = Form { render = counterRender
+            , process = counterProcess
+            , validate = counterValidate
+            }
+
+testCol = Container [ Item "down" Decrease, Item "up" Increase ]
+
+testEmpty = Empty
+
+testButton = Item "Bum" Decrease
