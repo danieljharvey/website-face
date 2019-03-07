@@ -44,8 +44,10 @@ cycleAnimal Other = Other
 showAnimal :: SimpleFunc String Animal
 showAnimal = arr readAnimal
 
-f, g :: SimpleFunc Int Int
+f :: SimpleFunc Int Int
 f = arr (`div` 2)
+
+g :: SimpleFunc Int Int
 g = arr (\x -> x*3 + 1)
 
 h' :: SimpleFunc Int Int
