@@ -11,7 +11,7 @@ spec
       it "One" $
         one `shouldBe` 6
       it "Two" $
-        two `shouldBe` ["Egg", "Egg", "Egg"]
+        two `shouldBe` [Egg, Egg, Egg]
       it "Three" $
         three `shouldBe` 5
       it "Four" $
