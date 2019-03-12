@@ -41,20 +41,40 @@ cycleAnimal Dog   = Horse
 cycleAnimal Horse = Cat
 cycleAnimal Other = Other
 
-showAnimal :: SimpleFunc String Animal
-showAnimal = arr readAnimal
+readAnimalA :: SimpleFunc String Animal
+readAnimalA = arr readAnimal
 
-f :: SimpleFunc Int Int
-f = arr (`div` 2)
+cycleAnimalA :: SimpleFunc Animal Animal
+cycleAnimalA = arr cycleAnimal
 
-g :: SimpleFunc Int Int
-g = arr (\x -> x*3 + 1)
+animalTimeA :: SimpleFunc String (Animal, Animal)
+animalTimeA = proc str -> do
+  animal     <- readAnimalA  -< str
+  nextAnimal <- cycleAnimalA -< animal
+  returnA -< (animal, nextAnimal)
 
-h' :: SimpleFunc Int Int
-h' = proc x -> do
-  fx <- f -< x
-  gx <- g -< x
-  returnA -< (fx + gx)
+pairOfPets :: (Animal, Animal)
+pairOfPets = runF animalTimeA "dog"
 
-hOutput' :: Int
-hOutput' = runF h' 1
+askQuestion :: String -> IO String
+askQuestion s = do
+  putStrLn s
+  getLine
+
+askQuestionK :: Kleisli IO String String
+askQuestionK = Kleisli askQuestion
+
+manyQuestionsK :: Kleisli IO String Int
+manyQuestionsK = proc str -> do
+  first      <- askQuestionK -< ("1. " <> str)
+  second     <- askQuestionK -< ("2. " <> str) 
+  third      <- askQuestionK -< ("3. " <> str)
+  returnA    -< (isDog first) + (isDog second) + (isDog third)
+    where
+      isDog :: String -> Int
+      isDog s = if s == "dog" then 1 else 0
+
+questionTime :: IO ()
+questionTime = do
+  i <- runKleisli manyQuestionsK "Type dog"
+  putStrLn $ "You typed 'dog' " <> show i <> " times."

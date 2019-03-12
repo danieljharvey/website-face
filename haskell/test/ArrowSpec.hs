@@ -6,5 +6,5 @@ import           Test.Hspec
 -- spec :: IO ()
 spec =
   describe "Arrow" $
-    it "Seems OK" $
-      "1" `shouldBe` "1"
+    it "Combines the pets" $
+      pairOfPets `shouldBe` (Dog, Horse)
