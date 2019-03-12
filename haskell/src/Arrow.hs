@@ -4,6 +4,7 @@ module Arrow where
 import           Control.Arrow
 import           Control.Category
 import           Prelude          hiding (id, (.))
+import           Data.Maybe
 
 newtype SimpleFunc a b
   = SimpleFunc { runF :: a -> b }
@@ -69,7 +70,12 @@ manyQuestionsK = proc str -> do
   first      <- askQuestionK -< ("1. " <> str)
   second     <- askQuestionK -< ("2. " <> str) 
   third      <- askQuestionK -< ("3. " <> str)
-  returnA    -< (isDog first) + (isDog second) + (isDog third)
+  fourth     <- if third == "dog"
+                then do
+                  fourth' <- askQuestionK -< ("Bonus. " <> str)
+                  returnA -< Just fourth'
+                else returnA -< Nothing
+  returnA    -< (isDog first) + (isDog second) + (isDog third) + (fromMaybe 0 (isDog <$> fourth))
     where
       isDog :: String -> Int
       isDog s = if s == "dog" then 1 else 0
