@@ -34,6 +34,8 @@ length'' = runFuncBox length' "dog"
 
 OK. Good stuff. We now have a very longwinded way of running the `length` function. Good stuff. Big day.
 
+![A relatable piece of content to break up this block of text.](/images/profunctor-optics.png "A relatable piece of content to break up this block of text.")
+
 ### The plot thickens
 
 Now what if want to run this weird function, but instead of having a `String` to hand, we only have an `Animal`...
@@ -100,49 +102,48 @@ dimap
   -> FuncBox Animal [Egg] -- exciting new container
 ```
 
+OK. Let's implement it for our `FuncBox`.
+
+### Instances, binstances, dinstances
+
+```haskell
 import Data.Profunctor
 
 instance Profunctor FuncBox where
-dimap before after (FuncBox f)
-= FuncBox (after . f . before)
+  dimap before after (FuncBox f)
+    = FuncBox (after . f . before)
+```
 
-data Egg = Egg
-deriving (Show, Eq, Ord)
+That's all really. The `.` is function composition, so therefore our function unwraps the original function and calls it `f`, then returns a new `FuncBox` which runs the `before` function (ie, the `a -> b` one), then the original `f` function, and finally the `after` function (`c -> d`). The resulting `FuncBox` can be used exactly as before, and nobody using it knows how secretly clever it is.
 
-data Animal = Horse | Dog | Cat
-deriving (Show)
+Let's use it to make our all important function for turning an `Animal` in to a `[Egg]`, using our `length'` and `repeatEgg` functions from earlier.
 
-repeatEgg :: Int -> [Egg]
-repeatEgg s
-= replicate s Egg
-
-length' :: FuncBox String Int
-length' = FuncBox length
-
-leftMapped :: FuncBox Animal Int
-leftMapped
-= lmap show length'
-
-rightMapped :: FuncBox String String
-rightMapped
-= rmap show length'
-
+```haskell
 dimapped :: FuncBox Animal [Egg]
 dimapped
 = dimap show repeatEgg length'
+```
 
-one :: Int
-one = runFuncBox length' "horses"
--- one == 6
+This gives us a new `FuncBox` that turns `Animal` into `[Egg]`, but of course we all know that underneath the hood this function it's converting `Animal -> String -> Int -> [Egg]`. Let's see it in action:
 
-two :: [Egg]
-two = runFuncBox dimapped Dog
--- two == [Egg, Egg, Egg]
+```haskell
+test :: [Egg]
+test = runFuncBox dimapped Dog
+-- test == [Egg, Egg, Egg]
 
-three :: Int
-three = runFuncBox leftMapped Horse
--- three == 5
+test2 :: Int
+test2 = runFuncBox dimapped Horse
+-- test2 == [Egg, Egg, Egg, Egg, Egg]
+```
 
-four :: String
-four = runFuncBox rightMapped "Dog"
--- four == "3"
+Brilliant. What an absolutely useful non-waste-of-time. OK. So these are stupid examples, but hopefully they give you a rough idea what a `Profunctor` is under the hood. You often hear of their use in Lenses, as using `dimap` on a function for changing two small things can make it into a function that changes a small thing inside a much bigger thing, and they compose in the same nice way.
+
+Good stuff.
+
+Feel free to shout your brains about how stupid and wrong I am via the [usual channels](/contact.html).
+
+Further reading:
+
+[Easier lenses](https://www.schoolofhaskell.com/user/griba/easier_lenses_profunctor_based_with_mezzolens)
+
+[Data.Profunctor](http://hackage.haskell.org/package/profunctors-5.3/docs/Data-Profunctor.html)
