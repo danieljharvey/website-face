@@ -37,3 +37,11 @@ spec = do
       getGridItem startGrid (2,2) `shouldBe` 1
     it "Gets 5,5" $
       getGridItem startGrid (5,5) `shouldBe` 0
+    it "firstItem is 1" $
+      firstItem `shouldBe` 1
+    it "secondItem is 5" $
+      secondItem `shouldBe` 5
+    it "thirdItem is 3" $
+      thirdItem `shouldBe` 3
+    it "fourthItem is 0" $
+      fourthItem `shouldBe` 0

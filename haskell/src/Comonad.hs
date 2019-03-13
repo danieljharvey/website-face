@@ -2,6 +2,7 @@ module Comonad where
 
 import           Control.Comonad.Store
 import           Data.List             (isInfixOf)
+import           Data.Monoid
 
 data Which = This | That | Who deriving (Show, Eq)
 
@@ -86,8 +87,47 @@ startGrid = [ [0,0,1,0,0]
 
 type Point = (Int, Int)
 
+startPoint :: Point
+startPoint = (2,2)
+
 getGridItem :: Grid -> Point -> Int
 getGridItem grid (x,y) = col !! x' where
   col = grid !! y'
   x' = x `mod` 5
   y' = y `mod` 5
+
+startStore :: Store Point Int
+startStore
+  = store (getGridItem startGrid) startPoint
+
+firstItem :: Int
+firstItem = extract startStore
+-- firstItem == 1
+
+-- adds up all of the items around our item
+nextStep :: Store Point Int -> Int
+nextStep store
+  = foldr (+) 0 [ change (-1) (-1)  , change 0 (-1) , change 1 (-1)
+                , change (-1) 0   , change 0 0  , change 1 0
+                , change (-1) 1   , change 0 1  , change 1 1
+                ]
+    where
+      change :: Int -> Int -> Int
+      change x y
+        = peeks (\(a,b) -> (x + a, y + b)) store
+
+-- our startStore, after nextStep has been run over each item
+endStore :: Store Point Int
+endStore = extend nextStep startStore
+
+secondItem :: Int
+secondItem = extract endStore
+-- secondItem == 5
+
+thirdItem :: Int
+thirdItem = peek (0,1) endStore
+-- thirdItem == 3
+
+fourthItem :: Int
+fourthItem = peek (0,0) endStore
+-- fourthItem == 0
