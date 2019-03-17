@@ -29,6 +29,7 @@ library
                   , Foldable
                   , Form
                   , Free
+                  , Reader
                   , Write
                   , State
                   , Nonempty
@@ -80,6 +81,7 @@ test-suite unit-tests
                   , Foldable
                   , Form
                   , Free
+                  , Reader
                   , Write
                   , State
                   , Nonempty
@@ -107,6 +109,7 @@ test-suite unit-tests
                   , NewtypesSpec
                   , SemigroupSpec
                   , StateSpec
+                  , ReaderSpec
                   , ValidationSpec
                   , WriteSpec
                   , NonemptySpec
