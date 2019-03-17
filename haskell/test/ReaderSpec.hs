@@ -7,6 +7,8 @@ import           Test.Hspec
 spec =
   describe "Reader" $ do
     it "Runs the most basic Reader" $
-      runningIt `shouldBe` "Hello, Dog"
+      basic `shouldBe` "Hello, Dog"
     it "Functor" $
-      mapped `shouldBe` "Hello, Dog!!!!"
+      functor `shouldBe` "Hello, Dog!!!!"
+    it "Applicative" $
+      applicative `shouldBe` 10

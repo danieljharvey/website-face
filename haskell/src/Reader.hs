@@ -3,16 +3,36 @@ module Reader where
 newtype Reader r a
   = Reader { runReader :: r -> a }
 
-basic :: Reader String String
-basic = Reader (\r -> "Hello, " <> r)
+reader :: Reader String String
+reader = Reader (\r -> "Hello, " <> r)
 
-runningIt :: String
-runningIt = runReader basic "Dog"
+basic :: String
+basic = runReader reader "Dog"
 -- "Hello Dog"
-
 
 instance Functor (Reader r) where
   fmap f (Reader a) = Reader (f <$> a)
 
-mapped :: String
-mapped = runReader (fmap (++ "!!!!") basic) "Dog"
+functor :: String
+functor
+  = runReader (fmap (++ "!!!!") reader) "Dog"
+
+instance Applicative (Reader r) where
+  pure a = Reader (const a)
+
+  (Reader f) <*> (Reader a) = Reader (\r -> f r (a r))
+
+-- lift the length function into Reader context
+-- it will ignore the `r` that is passed in
+func :: Reader String (String -> Int)
+func = pure length
+
+-- run func on reader, and then pass in "Dog"
+applicative :: Int
+applicative = runReader (func <*> reader) "Dog"
+-- applicative == 10
+
+instance Monad (Reader r) where
+  m >>= k
+    = Reader $ \r -> runReader (k (runReader m r)) r
+
