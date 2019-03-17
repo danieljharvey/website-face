@@ -3,8 +3,7 @@ title: Datatypes - Maybe
 tags: haskell, datatype, maybe
 ---
 
-It's one thing to understand typeclasses individually, but another to see them
-in context. This is the first in a series where we'll look at some common datatypes and see how their instances of the main typeclasses act. We're starting with one of the simplest, `Maybe`, and I hope this will help you get a feel for the way it acts. The plan is to move onto `Either`, `List` and then `Reader`, `Writer` and `State`.
+It's one thing to understand typeclasses individually, but another to see them in context. This is the first in a series where we'll look at some common datatypes and see how their instances of the main typeclasses act. We're starting with one of the simplest, `Maybe`, and I hope this will help you get a feel for the way it acts. The plan is to move onto `Either`, `List` and then `Reader`, `Writer` and `State`.
 
 ### It Really Meant Nothing, Frank
 
@@ -16,6 +15,17 @@ data Maybe a = Just a | Nothing
 ```
 
 As is hopefully apparently, `Maybe` can either be a `Just` with an `a` wrapped inside, or `Nothing` which holds no value.
+
+```haskell
+noNinePlease :: Int -> Maybe Int
+noNinePlease i
+  = if i == 9
+    then Nothing
+    else Just i
+
+noNinePlease 8 -- Just 8
+noNinePlease 9 -- Nothing
+```
 
 ### Functor
 
@@ -124,7 +134,7 @@ instance MonadPlus Maybe where
 
   mplus (Just a) _ = Just a
   mplus (Nothing) (Just b) = Just b
-  mplus _ _ = Nothing  
+  mplus _ _ = Nothing
 
 
 Nothing `mplus` Nothing -- Nothing

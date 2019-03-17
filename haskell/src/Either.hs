@@ -1,9 +1,9 @@
 module Either where
 
-import Prelude hiding (Either(..))
-import Control.Applicative
-import Control.Monad.Zip
-import Data.Bifunctor
+import           Control.Applicative
+import           Control.Monad.Zip
+import           Data.Bifunctor
+import           Prelude             hiding (Either (..))
 
 data Either a b
   = Left a
@@ -42,7 +42,7 @@ instance (Semigroup a) => Semigroup (Either e a) where
   (Left a)  <> b         = b
   a         <> (Left b)  = a
 
- 
+
 {- BORKED
 instance (Semigroup a, Monoid e) => Monoid (Either e a) where
   mempty = Right mempty -- doesn't work - wouldn't combine with a left properly
