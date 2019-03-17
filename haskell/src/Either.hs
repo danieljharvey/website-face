@@ -1,10 +1,9 @@
 module Either where
 
-import Prelude hiding (Either(..))
-import Control.Applicative
-import Control.Monad.Fail
-import Control.Monad hiding (fail)
-import Control.Monad.Zip
+import           Control.Applicative
+import           Control.Monad.Zip
+import           Data.Bifunctor
+import           Prelude             hiding (Either (..))
 
 data Either a b
   = Left a
@@ -14,6 +13,12 @@ data Either a b
 instance Functor (Either a) where
   fmap f (Right b) = Right (f b)
   fmap _ (Left a)  = Left a
+
+
+instance Bifunctor Either where
+  bimap f _ (Left a)  = Left (f a)
+  bimap _ g (Right b) = Right (g b)
+
 
 -- pure = default for datatype.
 -- we assume success so Right
@@ -37,40 +42,41 @@ instance (Semigroup a) => Semigroup (Either e a) where
   (Left a)  <> b         = b
   a         <> (Left b)  = a
 
--- since Left needs to have a value inside of it, we can only have mempty if the e has a mempty too
+
+{- BORKED
 instance (Semigroup a, Monoid e) => Monoid (Either e a) where
-  mempty = Left mempty
+  mempty = Right mempty -- doesn't work - wouldn't combine with a left properly
+-}
 
 -- think of this as combining a list that may have one or zero items
 instance Foldable (Either e) where
   foldr _ a (Left e)  = a
   foldr f a (Right b) = f b a
 
-  {-
-instance Alternative Maybe where
-  empty                 = Nothing
-  (Just a) <|> _        = Just a
-  Nothing  <|> (Just b) = Just b
-  Nothing  <|> Nothing  = Nothing
+{- BORKED
+instance (Monoid e) => Alternative (Either e) where
+  empty                  = Left mempty
+  (Right a) <|> _        = Right a
+  Left _   <|> (Right b) = Right b
+  Nothing  <|> Nothing   = Nothing
+-}
 
-instance Traversable Maybe where
-  traverse _ Nothing  = pure Nothing
-  traverse f (Just a) = fmap Just (f a)
+
+instance Traversable (Either e) where
+  traverse _ (Left e)  = pure (Left e)
+  traverse f (Right a) = fmap Right (f a)
+
 
 -- provides a general purpose way of failing a computation
-instance MonadFail Maybe where
-  fail _ = Nothing
+{-
+ can't have MonadFail (Either e) because e might not be String
+instance MonadFail (Either String) where
+  fail e = Left e
 
--- it's just Alternative again!
-instance MonadPlus Maybe where
-  mzero = Nothing
-
-  mplus (Just a) _ = Just a
-  mplus (Nothing) (Just b) = Just b
-  mplus _ _ = Nothing  
-
--- a monad generalising zipLists (combining two sets of things into one)
-instance MonadZip Maybe where
-  mzipWith = liftA2
+-- MonadPlus is Alternative and thus doesn't work
 
 -}
+-- a monad generalising zipLists (combining two sets of things into one)
+instance MonadZip (Either e) where
+  mzipWith = liftA2
+

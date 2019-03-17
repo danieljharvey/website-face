@@ -4,6 +4,7 @@ import           Control.Monad.Zip
 import           Control.Monad hiding (fail)
 import           Control.Monad.Fail
 import           Control.Applicative
+import           Data.Bifunctor
 import           Prelude hiding (Either(..), fail)
 import           Either
 import           Test.Hspec
@@ -34,9 +35,15 @@ spec =
       Left 1 <> Right [4,5,6] `shouldBe` (Right [4,5,6] :: Either Int [Int])
     it "Keeps first Left" $
       Left 1 <> Left 2 `shouldBe` (Left 1 :: Either Int [Int])
-    it "Does an mempty for a Monoid e" $
-      (mempty :: Either [Int] [Int]) `shouldBe` Left []
     it "Folds a Left to the default" $
       foldr (+) 1 (Left 10) `shouldBe` (1 :: Int)
     it "Folds a Right and does addition" $
       foldr (+) 1 (Right 10) `shouldBe` (11 :: Int)
+    it "Sequences a list of Rights" $
+      sequence [Right 1, Right 2] `shouldBe` (Right [1,2] :: Either Int [Int])
+    it "Sequences a list with Lefts in" $
+      sequence [Left 1, Right 1] `shouldBe` (Left 1 :: Either Int [Int])
+    it "Bimap over Left" $
+      bimap (+1) (+1) (Left (1 :: Int)) `shouldBe` (Left 2)
+    it "Bimap over Right" $
+      bimap (+1) (+1) (Right (1 :: Int)) `shouldBe` (Right 2)
