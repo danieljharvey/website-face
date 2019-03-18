@@ -260,4 +260,4 @@ Further Reading:
 
 [You've Been Using Monads](https://egghead.io/lessons/javascript-you-ve-been-using-monads)
 
-[More](https://www.google.com/search?q=monad+tutorial)
+[Lots More Of This Kind Of Thing](https://www.google.com/search?q=monad+tutorial)
