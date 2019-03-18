@@ -29,6 +29,7 @@ library
                   , Foldable
                   , Form
                   , Free
+                  , Monad
                   , Reader
                   , Write
                   , State
@@ -81,6 +82,7 @@ test-suite unit-tests
                   , Foldable
                   , Form
                   , Free
+                  , Monad
                   , Reader
                   , Write
                   , State
@@ -108,6 +110,7 @@ test-suite unit-tests
                   , MonoidSpec
                   , NewtypesSpec
                   , SemigroupSpec
+                  , MonadSpec
                   , StateSpec
                   , ReaderSpec
                   , ValidationSpec

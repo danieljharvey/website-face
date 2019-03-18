@@ -51,3 +51,5 @@ monad = do
 runMonad :: String
 runMonad = runReader monad "Log"
 -- runMonad == "Log: Hello, Log/nHello, Log"
+
+
