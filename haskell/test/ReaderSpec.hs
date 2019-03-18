@@ -12,3 +12,5 @@ spec =
       functor `shouldBe` "Hello, Dog!!!!"
     it "Applicative" $
       applicative `shouldBe` 10
+    it "Monad" $
+      runMonad `shouldBe` "Log: Hello, Log/nHello, Log"

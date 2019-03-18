@@ -1,5 +1,7 @@
 module Reader where
 
+import Prelude hiding (Reader, ask)
+
 newtype Reader r a
   = Reader { runReader :: r -> a }
 
@@ -33,6 +35,19 @@ applicative = runReader (func <*> reader) "Dog"
 -- applicative == 10
 
 instance Monad (Reader r) where
-  m >>= k
-    = Reader $ \r -> runReader (k (runReader m r)) r
+  (Reader m) >>= k
+    = Reader $ \r -> runReader (k (m r)) r
 
+ask :: Reader a a
+ask = Reader id
+
+monad :: Reader String String
+monad = do
+  name <- ask
+  first  <- reader
+  second <- reader
+  pure $ name ++ ": " ++ first ++ "/n" ++ second
+
+runMonad :: String
+runMonad = runReader monad "Log"
+-- runMonad == "Log: Hello, Log/nHello, Log"
