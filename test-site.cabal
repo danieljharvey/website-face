@@ -45,6 +45,7 @@ library
   hs-source-dirs:   haskell/src
   build-depends:    base == 4.*
                   , lens
+                  , curl
                   , free
                   , mtl
                   , ilist
@@ -103,6 +104,7 @@ test-suite unit-tests
                   , DoSpec
                   , FoldableSpec
                   , FormSpec
+                  , FreeSpec
                   , FunctorSpec
                   , BifunctorSpec
                   , ProfunctorSpec
@@ -123,6 +125,7 @@ test-suite unit-tests
                 , mtl
                 , ilist
                 , lens
+                , curl
                 , free
                 , bifunctors
                 , profunctors
