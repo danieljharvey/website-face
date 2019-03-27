@@ -4,10 +4,13 @@ module Free where
 
 import           Control.Monad.Free
 import qualified Control.Monad.State       as St
-import           Control.Monad.Writer.Lazy
+import           Control.Monad.Writer.Lazy hiding (Sum)
+import           Data.Functor.Sum
 import           Network.Curl
 import           Prelude
 import           System.Exit
+
+-- our first data type
 
 data ConsoleF a
   = Write String a
@@ -57,6 +60,8 @@ interpretWrite = foldFree interpret
           Read a -> do
             _ <- tell ["wait for input"]
             pure (a "input")
+
+-- and another
 
 data ReducerF s a
   = Modify (s -> s) a
@@ -127,3 +132,50 @@ initialState
           , url = "http://internetisverymuchmybusiness.com"
           , loading = False
           }
+
+-- and combine them!
+
+{-
+
+type CombinedF s = Sum (ConsoleF) (ReducerF s)
+
+type Combined s a
+  = Free (CombinedF s) a
+
+write' :: String -> Combined s ()
+write'
+  = liftLeft cWrite
+
+read' :: Combined s String
+read'
+  = liftLeft cRead
+
+modify' :: (s -> s) -> Combined s ()
+modify'
+  = liftRight modify
+
+fetch' :: String -> Combined s String
+fetch'
+  = liftRight fetch
+
+get' :: Combined s s
+get' 
+  = liftRight get
+
+liftLeft :: Free f a -> Free (Sum f g) a
+liftLeft = hoistFree InL
+
+liftRight :: Free f a -> Free (Sum f g) a
+liftRight = hoistFree InR
+
+loadAndLog :: Combined s a
+loadAndLog = do
+  modify' (\s
+    -> s { loading = True })
+  state <- get
+  str <- fetch (url state)
+  write' str -- let's log that string out
+  modify (\s
+    -> s { loading = False, string = Just str })
+
+-}

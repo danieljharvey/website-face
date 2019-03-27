@@ -11,7 +11,7 @@ spec =
     describe "Applicative" $
       it "Doesn't break with second Nope" $
         St.runState (interpretState fetchAction) initialState
-          `shouldBe` ((), State { strLength = 9
+          `shouldBe` ((), State { string = Just "test item"
                                 , url = "http://internetisverymuchmybusiness.com"
                                 , loading = False
                                 })
