@@ -3,6 +3,7 @@ module Either where
 import           Control.Applicative
 import           Control.Monad.Zip
 import           Data.Bifunctor
+import           Data.Semigroup
 import           Prelude             hiding (Either (..))
 
 data Either a b

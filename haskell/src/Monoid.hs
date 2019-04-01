@@ -1,5 +1,7 @@
 module Monoid where
 
+import           Data.Semigroup
+
 -- List bits
 
 combineList :: [[a]] -> [a]
@@ -19,7 +21,7 @@ ok = combineList1 []
 -- ok == []
 
 combineList1 :: [[a]] -> [a]
-combineList1 [] = []
+combineList1 []     = []
 combineList1 (a:as) = a ++ (combineList1 as)
 
 {-
@@ -44,6 +46,7 @@ instance (Num a) => Semigroup (MySum a) where
     MySum a <> MySum b = MySum (a + b)
 
 instance (Num a) => Monoid (MySum a) where
+    mappend = (<>)
     mempty = MySum 0
 
 ten :: Int
@@ -59,6 +62,7 @@ instance (Num a) => Semigroup (MyProduct a) where
     MyProduct a <> MyProduct b = MyProduct (a * b)
 
 instance (Num a) => Monoid (MyProduct a) where
+    mappend = (<>)
     mempty = MyProduct 1
 
 sixtySix :: Int

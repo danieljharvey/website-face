@@ -2,6 +2,7 @@
 
 module Form where
 
+import           Data.Semigroup
 
 data UI action
   = Empty
@@ -17,6 +18,7 @@ instance Semigroup (UI a) where
   a            <> b            = Container [a, b]
 
 instance Monoid (UI a) where
+  mappend = (<>)
   mempty = Empty
 
 data Form state action

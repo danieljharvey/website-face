@@ -4,6 +4,7 @@ import           Control.Monad.State
 import           Data.List
 import           Data.List.Index
 import           Data.Maybe          (isJust)
+import           Data.Semigroup
 import           Prelude
 
 type Href = String

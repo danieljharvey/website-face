@@ -1,12 +1,13 @@
 module Maybe where
 
-import Prelude hiding (Maybe(..), fail)
-import Control.Applicative
-import Control.Monad.Fail
-import Control.Monad hiding (fail)
-import Control.Monad.Zip
-import Control.Monad.Trans.Class
-import Control.Monad.IO.Class
+import           Control.Applicative
+import           Control.Monad             hiding (fail)
+import           Control.Monad.Fail
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Class
+import           Control.Monad.Zip
+import           Data.Semigroup
+import           Prelude                   hiding (Maybe (..), fail)
 
 data Maybe a = Just a | Nothing
   deriving (Eq, Ord, Show)
@@ -39,6 +40,7 @@ instance (Semigroup a) => Semigroup (Maybe a) where
 
 -- empty value is nothing as appending nothing to anything does not change it
 instance (Semigroup a) => Monoid (Maybe a) where
+  mappend = (<>)
   mempty = Nothing
 
 -- think of this as combining a list that may have one or zero items
@@ -64,9 +66,9 @@ instance MonadFail Maybe where
 instance MonadPlus Maybe where
   mzero = Nothing
 
-  mplus (Just a) _ = Just a
+  mplus (Just a) _         = Just a
   mplus (Nothing) (Just b) = Just b
-  mplus _ _ = Nothing  
+  mplus _ _                = Nothing
 
 -- a monad generalising zipLists (combining two sets of things into one)
 instance MonadZip Maybe where
@@ -85,14 +87,14 @@ instance (Functor m) => Functor (MaybeT m) where
     where
       mapped
         = (fmap . fmap) f value
-      
+
       value
         = runMaybeT a
 
 -- applicative instance
 instance (Monad m) => Applicative (MaybeT m) where
   pure a = MaybeT (pure (Just a))
-  
+
   maybeTF <*> maybeTA = MaybeT $ do
     maybeF <- runMaybeT maybeTF
     case maybeF of
@@ -101,7 +103,7 @@ instance (Monad m) => Applicative (MaybeT m) where
        maybeA <- runMaybeT maybeTA
        case maybeA of
          Nothing -> pure Nothing
-         Just a  -> pure (Just (f a)) 
+         Just a  -> pure (Just (f a))
 
 instance (Monad m) => Monad (MaybeT m) where
   return = pure
@@ -140,5 +142,5 @@ getNiceLine :: MaybeT IO String
 getNiceLine = do
   line <- liftIO readLn
   if (length line) > 0
-    then pure line 
+    then pure line
     else fail "String too short"

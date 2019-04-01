@@ -1,14 +1,15 @@
 module EitherSpec where
 
-import           Control.Monad.Zip
-import           Control.Monad hiding (fail)
-import           Control.Monad.Fail
 import           Control.Applicative
-import           Data.Bifunctor
-import           Prelude hiding (Either(..), fail)
-import           Either
-import           Test.Hspec
+import           Control.Monad          hiding (fail)
+import           Control.Monad.Fail
 import           Control.Monad.Identity hiding (fail)
+import           Control.Monad.Zip
+import           Data.Bifunctor
+import           Data.Semigroup
+import           Either
+import           Prelude                hiding (Either (..), fail)
+import           Test.Hspec
 
 -- spec :: IO ()
 spec =

@@ -1,8 +1,9 @@
 module Monad where
 
 import           Control.Monad.Reader
-import           Control.Monad.Writer
+import           Control.Monad.Writer hiding ((<>))
 import           Data.List
+import           Data.Semigroup       ((<>))
 
 -- simple definition
 

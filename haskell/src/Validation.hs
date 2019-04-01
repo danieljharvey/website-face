@@ -1,6 +1,7 @@
 module Validation where
 
 import           Data.List
+import           Data.Semigroup
 import           Data.Validation
 
 data Failures = TooLong | TooShort | ContainsEgg deriving (Show)

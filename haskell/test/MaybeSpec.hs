@@ -1,13 +1,14 @@
 module MaybeSpec where
 
-import           Control.Monad.Zip
-import           Control.Monad hiding (fail)
-import           Control.Monad.Fail
 import           Control.Applicative
-import           Prelude hiding (Maybe(..), fail)
-import           Maybe
-import           Test.Hspec
+import           Control.Monad          hiding (fail)
+import           Control.Monad.Fail
 import           Control.Monad.Identity hiding (fail)
+import           Control.Monad.Zip
+import           Data.Semigroup
+import           Maybe
+import           Prelude                hiding (Maybe (..), fail)
+import           Test.Hspec
 
 type MaybeIdentity = MaybeT Identity
 
@@ -67,7 +68,7 @@ spec =
     it "MonadZip mzipWith fail" $
       mzip (Just 1) Nothing `shouldBe` (Nothing :: Maybe (Int, Int))
     it "MaybeT Fmaps" $
-      runMaybeT (fmap (+1) (pure 1 :: MaybeIdentity Int)) 
+      runMaybeT (fmap (+1) (pure 1 :: MaybeIdentity Int))
         `shouldBe` (Identity (Just 2) :: Identity (Maybe Int))
     it "MaybeT pure" $
       runMaybeT (pure 1 :: MaybeIdentity Int) `shouldBe` Identity (Just 1)

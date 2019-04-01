@@ -3,8 +3,8 @@ module Arrow where
 
 import           Control.Arrow
 import           Control.Category
-import           Prelude          hiding (id, (.))
 import           Data.Maybe
+import           Prelude          hiding (id, (.))
 
 newtype SimpleFunc a b
   = SimpleFunc { runF :: a -> b }
@@ -67,15 +67,15 @@ askQuestionK = Kleisli askQuestion
 
 manyQuestionsK :: Kleisli IO String Int
 manyQuestionsK = proc str -> do
-  first      <- askQuestionK -< ("1. " <> str)
-  second     <- askQuestionK -< ("2. " <> str) 
-  third      <- askQuestionK -< ("3. " <> str)
+  first      <- askQuestionK -< ("1. " ++ str)
+  second     <- askQuestionK -< ("2. " ++ str)
+  third      <- askQuestionK -< ("3. " ++ str)
   fourth     <- if third == "dog"
                 then do
-                  fourth' <- askQuestionK -< ("Bonus. " <> str)
+                  fourth' <- askQuestionK -< ("Bonus. " ++ str)
                   returnA -< Just fourth'
                 else returnA -< Nothing
-  returnA    -< (isDog first) + (isDog second) + (isDog third) + (fromMaybe 0 (isDog <$> fourth))
+  returnA    -< isDog first + isDog second + isDog third + maybe 0 isDog fourth
     where
       isDog :: String -> Int
       isDog s = if s == "dog" then 1 else 0
@@ -83,4 +83,4 @@ manyQuestionsK = proc str -> do
 questionTime :: IO ()
 questionTime = do
   i <- runKleisli manyQuestionsK "Type dog"
-  putStrLn $ "You typed 'dog' " <> show i <> " times."
+  putStrLn $ "You typed 'dog' " ++ show i ++ " times."
