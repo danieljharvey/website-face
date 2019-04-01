@@ -41,3 +41,7 @@ web/releases.markdown
 /.psc*
 /.purs*
 /.psa*
+
+# Cabal stuff
+
+/dist-newstyle/
