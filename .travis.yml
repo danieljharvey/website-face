@@ -19,8 +19,6 @@ install:
   - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
   - npm install
   - unset CC
-  - nix-env --install cabal-install
-  - cabal install --only-dependencies --enable-tests
   - export PATH=$HOME/.local/bin:/opt/ghc/$GHCVER/bin:$PATH
   - ./.travis/install-stack.sh
   - cd purescript
@@ -33,10 +31,9 @@ script:
   - GHC_OPTIONS="-Werror"
   - |
     set -ex
-    cabal new-run unit-tests --disable-documentation --disable-optimization
 
     # Run Haskell tests
-    # stack --no-terminal test --ghc-options="$GHC_OPTIONS"
+    stack --no-terminal test --fast --ghc-options="$GHC_OPTIONS"
     set +ex
 
     # run Purescript tests
