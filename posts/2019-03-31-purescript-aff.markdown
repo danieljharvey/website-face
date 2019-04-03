@@ -119,4 +119,119 @@ Not ideal.
 
 ### What has this got to do with eggs?
 
-Sure, sure. Coming back round to our game, we have a similar problem. The game is tile based and so before we can dream of drawing anything we're going to need to load a big pile of images.
+Sure, sure. Coming back round to our game, we have a similar problem. The game is tile based and so before we can dream of drawing anything we're going to need to load a big pile of images. As we can see in the [Purescript Canvas Docs](https://pursuit.purescript.org/packages/purescript-canvas/4.0.0/docs/Graphics.Canvas) we are going to need a `CanvasImageSource` to draw a sprite onto the canvas:
+
+```haskell
+drawImage :: Context2D -> CanvasImageSource -> Number -> Number -> Effect Unit
+```
+
+How do we load one? With this `tryLoadImage` function.
+
+```haskell
+tryLoadImage :: String -> (Maybe CanvasImageSource -> Effect Unit) -> Effect Unit
+```
+
+It takes a `String` (the path to the image), a callback function (that will be passed `Maybe CanvasImageSource`), and then returns `Effect Unit`. This is very similar to `readLine`, so if we want to load lots of images we are going to end up with a weird pyramid of callbacks and generally a bad mess.
+
+### Enter Aff
+
+[Aff](https://github.com/slamdata/purescript-aff) is the asynchronous effect monad for Purescript. It allows to sequence async events without using callbacks, and we're going to use it to load loads of images. First we are going to need to wrap our `Effect` function to make an `Aff` function.
+
+```haskell
+tryLoadImageAff ::
+  String ->
+  Aff CanvasImageSource
+tryLoadImageAff path = makeAff wrappedFn
+  where
+    wrappedFn done = do
+      tryLoadImage path (\maybeImage -> case maybeImage of
+        Just canvasImage -> done (Right canvasImage))
+        Nothing          -> done (Left (error "Could not load " <> path))
+      )
+    pure mempty -- return empty cancellation function
+```
+
+How does this work then?
+
+Firstly, it probably helps to look at the type signature for `makeAff`:
+
+```haskell
+makeAff :: forall a. ((Either Error a -> Effect Unit) -> Effect Canceler) -> Aff a
+```
+
+OK. It's a bit weird. The `a` can be whatever item we're trying to move around, let's replace it with `CanvasImageSource`:
+
+```haskell
+makeAff :: ((Either Error CanvasImageSource -> Effect Unit) -> Effect Canceler) -> Aff CanvasImageSource
+```
+
+This function takes a function that returns an `Effect Canceler`, and returns an `Aff` function that returns a `CanvasImageSource`. The `(Either Error CanvasImageSource -> Effect Unit)` function will actually be passed to you, to use as the callback for the `Effect` function you are wrapping.
+
+Let's look closer at `wrappedFn`, with a type signature added for clarity.
+
+```haskell
+wrappedFn
+  :: (Either Error CanvasImageSource -> Effect Unit)
+  -> Effect Canceler
+wrappedFn done = do
+  tryLoadImage path (\maybeImage -> case maybeImage of
+    Just canvasImage -> done (Right canvasImage))
+    Nothing          -> done (Left (error "Could not load " <> path))
+  )
+  pure mempty
+```
+
+It is passed `done` - which takes an `Either` holding either an `Error` for failure, or a `CanvasImageSource` if all went well.
+
+The callback in `tryLoadImage` gives us a `Maybe` so we pattern match on that, add a helpful `Error` if things go wrong, or return the `CanvasImageSource` if it all works.
+
+Finally, it creates an `Effect Canceler` with `pure mempty` - which just returns a `Canceler` that does nothing.
+
+### Using our exciting new function
+
+OK, so let's say we have an array of filepaths...
+
+```haskell
+paths :: Array String
+paths = [ "./static/images/brick.png"
+        , "./static/images/tile.png"
+        , "./static/images/egg.png"
+        , "./static/images/egg2.png"
+        , "./static/images/egg3.png"
+        ]
+```
+
+It's as (relatively) simple as this:
+
+```haskell
+loadImages :: Array String -> Aff (Array CanvasImageSource)
+loadImages paths
+  = traverse tryLoadImageAff paths
+```
+
+`loadImages` takes our list of file paths, and returns an `Aff` containing an `Array` of `CanvasImageSource`. `traverse` runs our function on each item in the array, then turns the types inside out so we can `Aff (Array CanvasImageSource)` instead of `Array (Aff CanvasImageSource)`.
+
+Constructing this `Aff` doesn't do anything until we actually run it, which we can do with `runAff`.
+
+```haskell
+runAff_ :: forall a. (Either Error a -> Effect Unit) -> Aff a -> Effect Unit
+```
+
+It takes a callback, the `Aff` we have constructed, and then returns `Effect Unit`. Our whole image loading program would thus look like this:
+
+```haskell
+main :: Effect Unit
+main = do
+  let imageAff
+        = loadImages paths
+      callback
+        = (\images -> case images of
+            Left a  -> log a
+            Right a -> log $ show (length a) <> " images loaded!"
+          )
+  runAff_ callback imageAff
+```
+
+This will attempt to load the files, and then either log out the error message or the number of files loaded! Magic!
+
+Next time, we'll learn to do something with these files.
