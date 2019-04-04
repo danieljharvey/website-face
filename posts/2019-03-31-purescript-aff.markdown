@@ -13,6 +13,8 @@ It falls into three parts:
 - Rendering
 - Logic
 
+![The new game looking completely OK.](/images/eggs.png "The new game looking completely OK.")
+
 ### Admin
 
 The admin of the game is everything that needs setting up at the start. Images need loading, level files need loading, window events need setting, and we need to start a game loop that will run everything all the other parts. All of this stuff is very _effectful_ as it involves interacting with the real actual world, the thing that functional programmers are rightly terrified of. This is mostly the layer that we will be discussing today. This layer is difficult to test, so don't.
@@ -120,3 +122,6 @@ Not ideal.
 ### What has this got to do with eggs?
 
 Sure, sure. Coming back round to our game, we have a similar problem. The game is tile based and so before we can dream of drawing anything we're going to need to load a big pile of images.
+
+![A sprite sheet for an egg.](/images/egg-sprite.png "A sprite sheet for an egg.")
+
