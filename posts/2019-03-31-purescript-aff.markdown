@@ -3,9 +3,12 @@ title: A game in Purescript (Part 2 - Effect and Aff)
 tags: purescript, effect, aff
 ---
 
-Good morning and/or evening. I found myself defaulting to starting with an apology for the amount of time since my last post, then I caught myself and reminded myself that It's My Blog And I Can Post Whenever I Feel Like It Actually. So with that in mind, let's continue to today's main course, at exactly the rambling pace of my choosing.
+Good morning and/or evening. I found myself defaulting to starting with an apology for the amount of time since my last post, then I caught myself and reminded myself that _It's My Blog And I Can Post Whenever I Feel Like It Actually_. So with that in mind, let's continue to today's main course, at exactly the rambling pace
+of my choosing.
 
-As I may have mentioned, my current timesink of choice is a Purescript re-write of a browser game I wrote a couple of years back called It Is The Egg. It is going pretty OK, all told, I've gotten all the awful fiddly stuff like rendering sorted so now I am free to remake the game logic in nice pure functions and generally have a good time. For those of that don't spend their free time ignoring their loved ones and instead writing terrible games in a functional programming style, a few notes on the vague architecture that I have settled on.
+![The new game looking completely OK.](/images/eggmore.png "The new game looking completely OK.")
+
+As I may have mentioned, my current timesink of choice is a Purescript re-write of a browser game I wrote a couple of years back called [It Is The Egg](http://itistheegg.com/). It is going pretty OK, all told, I've gotten all the awful fiddly stuff like rendering sorted so now I am free to remake the game logic in nice pure functions and generally have a good time. For those of that don't spend their free time ignoring their loved ones and instead writing terrible games in a functional programming style, a few notes on the vague architecture that I have settled on.
 
 It falls into three parts:
 
@@ -25,11 +28,13 @@ Much like in the React architecture, the Rendering layer is only concerned with 
 
 The Logic layer is run every "turn" of the game and is a function that takes the current game state, any input that has been received since the last turn, and uses this to compute the next game state to pass to Rendering layer. Everything in the Logic layer is pure functions, and is very easy to test, therefore this should have lots of tests because we all good programmers who appreciate software craftsmanship. Anybody that has written Redux reducers should find this very familiar.
 
-Anybody vaguely familiar with design patterns in Haskell might be thinking "shit, this sounds a lot like Matt Parsons' [Three Layer Haskell Cake](https://www.parsonsmatt.org/2018/03/22/three_layer_haskell_cake.html) pattern, this could be pretty awkward" - and yes - it is indeed pretty similar, and shamelessly so.
+(Anybody vaguely familiar with design patterns in Haskell might be thinking "shit, this sounds a lot like Matt Parsons' [Three Layer Haskell Cake](https://www.parsonsmatt.org/2018/03/22/three_layer_haskell_cake.html) pattern, this could be pretty awkward" - and yes - it is indeed pretty similar, and shamelessly so.)
 
-### Anyway
+![More screenshots because code is tiring.](/images/eggs.png "More screenshots because code is tiring.")
 
-So today we're going to talk about the game setup part, and on the way, discover, as I did, the actual difference between Purescript's `Effect` and `Aff` and how to operate the two of them. Firstly - a bit of background.
+So today we're going to talk about the game setup part, and on the way, discover, as I did, the actual difference between Purescript's `Effect` and `Aff` and how to operate the two of them.
+
+### Firstly, some background
 
 Whilst any Haskell programming must start with a function such as this:
 
@@ -70,6 +75,8 @@ Greetings, Mr Horse
 ```
 
 The program greets the user, ask them their name, read the response, and use that name in the reply. The type signature for `readLine` is `IO String`, meaning a function that does some IO and returns a `String`. It does not specify when said string will arrive. If the user sits and waits for 100 years to type a response, the program will happily sit and do absolutely nothing else, obediently waiting for the user before continuing with the program.
+
+![Let's distract ourselves briefly with some eggs.](/images/egg-sprite-yellow.png "Let's distract ourselves briefly with some eggs.")
 
 Purescript, however, is built on top of Javascript, and some of you may be lucky enough to remember first getting stung by the concepts of callbacks etc when first moving to writing front end code. It's equivalent function to `readLine`, looks something like this:
 
@@ -119,7 +126,11 @@ Not ideal.
 
 ### What has this got to do with eggs?
 
-Sure, sure. Coming back round to our game, we have a similar problem. The game is tile based and so before we can dream of drawing anything we're going to need to load a big pile of images. As we can see in the [Purescript Canvas Docs](https://pursuit.purescript.org/packages/purescript-canvas/4.0.0/docs/Graphics.Canvas) we are going to need a `CanvasImageSource` to draw a sprite onto the canvas:
+Sure, sure. Coming back round to our game, we have a similar problem. The game is tile based and so before we can dream of drawing anything we're going to need to load a big pile of images.
+
+![A sprite sheet for an egg.](/images/egg-sprite.png "A sprite sheet for an egg.")
+
+As we can see in the [Purescript Canvas Docs](https://pursuit.purescript.org/packages/purescript-canvas/4.0.0/docs/Graphics.Canvas) we are going to need a `CanvasImageSource` to draw a sprite onto the canvas:
 
 ```haskell
 drawImage :: Context2D -> CanvasImageSource -> Number -> Number -> Effect Unit
@@ -189,7 +200,20 @@ Finally, it creates an `Effect Canceler` with `pure mempty` - which just returns
 
 ### Using our exciting new function
 
-OK, so let's say we have an array of filepaths...
+![A sprite of a box.](/images/crate.png "A sprite of a box.")
+
+Now instead of using callbacks, we can use regular monad binds to get our images out.
+
+```haskell
+loadLots :: Aff (Array CanvasImageSource)
+loadLots = do
+  file1 <- tryLoadImageAff "./static/images/brick.png"
+  file2 <- tryLoadImageAff "./static/images/tile.png"
+  file3 <- tryLoadImageAff "./static/images/egg.png"
+  pure [file1, file2, file3]
+```
+
+And even better than that, if we take an array of file paths...
 
 ```haskell
 paths :: Array String
@@ -201,7 +225,7 @@ paths = [ "./static/images/brick.png"
         ]
 ```
 
-It's as (relatively) simple as this:
+...we can use traverse to turn an array of paths into an array of `CanvasImageSource`.
 
 ```haskell
 loadImages :: Array String -> Aff (Array CanvasImageSource)
@@ -232,6 +256,10 @@ main = do
   runAff_ callback imageAff
 ```
 
-This will attempt to load the files, and then either log out the error message or the number of files loaded! Magic!
+This will attempt to load the files, and then either log out the error message or the number of files loaded! Magic! Next time, we'll grab these images and print them all over the screen in an exciting manner. For now though, this is quite enough.
 
-Next time, we'll learn to do something with these files.
+Further reading:
+
+[Graphics.Canvas](https://pursuit.purescript.org/packages/purescript-canvas/4.0.0/docs/Graphics.Canvas)
+
+[Effect.Aff](https://pursuit.purescript.org/packages/purescript-aff/5.1.1/docs/Effect.Aff)
