@@ -123,7 +123,7 @@ function printName(name) {
 }
 ```
 
-...gets a string type, which means we don't have to check it exists...
+...gets a string type, which means we don't have to check that `name` exists...
 
 ```typescript
 function printName(name: string) {
@@ -134,9 +134,11 @@ function printName(name: string) {
 }
 ```
 
-...but we still need to check whether the string is long enough. Damn.
+...but we still need to check whether `name` is long enough and return a default if not.
 
-# What about that classic divide by zero problem?
+### What about that classic divide by zero problem?
+
+What can basic types give us here?
 
 ```javascript
 function divide(a, b) {
@@ -148,7 +150,7 @@ function divide(a, b) {
 }
 ```
 
-- We can get rid of the number checks...
+We can get rid of the number checks...
 
 ```typescript
 function divide(a: number, b: number) {
@@ -160,63 +162,63 @@ function divide(a: number, b: number) {
 }
 ```
 
-- ...but we've still got to check for that zero value
+...but we've still got to check for that zero value. Better, but not great. What if I told you we could do better than this?
 
-# What if I told you....
+### Refined
 
-...we could do better than this?
-
-# oh shit
-
-![](./src/oh-shit-2.png)
-
-# Ivory tower bullshit
-
-From now on I may occasionally use the following syntax to describe types:
+Enter `Refined` types. A Refined type looks like this:
 
 ```haskell
-aVariableOrSomething :: TheTypeOfSaidThing
+newtype Refined predicate value = Refined value
 ```
 
-- `6` is an `Integer`
+As it is a `newtype` it is a wrapper around a value that is used for type
+purposes at compile time but then erased at run time (so when the program runs,
+`Refined 100` is just `100` as far as memory etc is concerned)
 
-```haskell
-6 :: Integer
-```
-
-- `6.7556` is a `Number`
-
-```haskell
-6.7556 :: Number
-```
-
-- "Horses" is a `String`
-
-```haskell
-"Horses" :: String
-```
-
-# Refined types
-
-A Refined type looks like this:
-
-```haskell
-Refined predicate value
-```
-
-`value` is the type we are refining, for example `Int` or `Number`.
+`value` is the type of actual data we are refining, for example `Int` or `Number`.
 
 `predicate` is a type that lets us better describe the `value`.
 
-# The most basic Refinement
+The most interesting thing to note here is that `predicate` only exists on the type side (ie before the `=`) and not after - this makes it a `phantom type` which is only used to add contextual information. Let's see what that actually means...
 
-The `id` predicate, which doesn't really do anything.
+### Making Refined values
+
+There are a few ways to make `Refined` values, especially in the Haskell
+library - we'll concentrate on two. I'm going to use the types from the
+Purescript version because a) they're simpler and b) I made them and am thus
+less likely to get it wrong.
+
+```haskell
+refine 
+  :: value 
+  -> Either RefinedError (Refined predicate value)
+```
+
+This is the regular way to make `Refined` value - you pass it a plain value and
+it returns either `Left` with a `RefinedError` describing the problem, or `Right` with
+the `Refined` value inside.
+
+```haskell
+unsafeRefine 
+  :: value 
+  -> Refined predicate value
+```
+
+This ignores the `predicate` and leaves it to the programmer to go full YOLO
+and decide whether the predicate will be fine. I have used this to make
+`Monoid` classes where I want to add two positive numbers without checking
+that the outcome will still be positive.
+
+### Id
+
+The most basic predicate is `id`, which doesn't really do anything.
 
 ```haskell
 Refined Id Int
 ```
 
-- The `id` (or `identity`) function is just a function that returns whatever it
+It's named after the `id` (or `identity`) function - the function that returns whatever it
   receives, basically doing nothing.
 
 ```haskell
@@ -224,19 +226,21 @@ identity :: x -> x
 identity x = x
 ```
 
-- Any value that is a value `Int` can be made into a valid `Refined Id Int`.
+For example, any value that is a value `Int` can be made into a valid `Refined Id Int`.
 
 ```haskell
-refine (11233) -- Sure
+id1 :: Either RefinedError (Refined Id Int)
+id1 = refine 11233
+-- id1 == Right (Refined 11233)
 ```
-
-- Great stuff.
 
 ```haskell
-refine (-213123) -- why not?
+id2 :: Either RefinedError (Refined Id Int)
+id2 = refine (-213123)
+-- id2 == Right (Refined (-213123)
 ```
 
-# A bit more clever
+### Positive
 
 The `Positive` predicate, which only allows numbers over 0.
 
@@ -244,113 +248,127 @@ The `Positive` predicate, which only allows numbers over 0.
 Refined Positive Int
 ```
 
-- The `refine` function works here:
+This refinement would pass the predicate:
  
 ```haskell
-refine(10) -- Great
+positive1 :: Either RefinedError (Refined Positive Int)
+positive1 = refine 10
+-- positive1 == Right (Refined 10)
 ```
 
-- But this isn't going to fly
+This clearly very negative number clearly won't fly. Nice try, ding dongs!
 
 ```haskell
-refine(-10) -- NO
+positive2 :: Either RefinedError (Refined Positive Int)
+positive2 = refine (-10)
+-- positive2 == Left (GreaterThanError 0 (-10))
 ```
 
-# We can be more specific
+### From
 
-The `From` predicate takes an integer and only allows values equal to or above
+We can be even more specific with these types too. The `From` predicate takes an integer and only allows values equal to or above
 it.
 
 ```haskell
-Refined (From 10) Int
+Refined (From D10) Int
 ```
 
-- So this will not `refine`.
+(A note here - that `D10` is a type-level `10`. It is provided by the [purescript-typelevel](https://github.com/bodil/purescript-typelevel) package.)
+
+Therefore this `9` is clearly taking the piss and totally won't `refine`.
 
 ```haskell
-refine(9) -- NO WAY
+from1 :: Either RefinedError (Refined (From D10) Int)
+from1 = refine 9
+-- from1 == Left (FromError 10 9) 
 ```
 
-- But this is totally great.
+However this `100` is cool with me, and will happily `refine`.
 
 ```haskell
-refine(100) -- really good stuff
+from2 :: Either RefinedError (Refined (From D10) Int)
+from2 = refine 100
+-- from2 == Right (Refined 100)
 ```
 
-# And in balance
+### To
 
-The `To` predicate gives us a maximum figure.
+Hopefully it should be fairly intuitive how the `To` predicate works...
 
 ```haskell
-Refined (To 100) Int
+to1 :: Either RefinedError (Refined (To D20) Int)
+to1 = refine 21
+-- to1 == Left (ToError 20 21)
 ```
-
-- So this is terrible.
 
 ```haskell
-refine (101) -- NO THANKS
+to2 :: Either RefinedError (Refined (To D20) Int)
+to2 = refine 17
+-- to2 == Right (Refined 17)
 ```
 
-- But this is great stuff.
+### SizeEqualTo, SizeGreaterThan, SizeLessThan
+
+Refinements don't have to just be about numbers - we can use them on `foldable`
+structures too, such as `Lists`. The refinements let us be specific about sizes
+of said structure. Therefore we could make a non-empty `List` of `Boolean`
+values with `Refined (SizeGreaterThan D0) (List Boolean)`.
+ 
+```haskell
+Refined (SizeGreaterThan 3) (List Number)
+```
+
+Therefore this list does not `refine`...
 
 ```haskell
-refine(80) -- SURE THING
+size1 :: Refined RefinedError (Refined (SizeGreaterThan D3) (List Number))
+size1 = refine [1, 2]
+-- size1 == Left (SizeGreaterThanError 3 [1, 2])
 ```
 
-# It doesn't just have to be numbers
-
-We can check strings too with `SizeEqualTo`, `SizeGreaterThan` and
-`SizeLessThan`.
+...but this one is fine.
 
 ```haskell
-Refined (SizeGreaterThan 3) String
+size2 :: Refined RefinedError (Refined (SizeGreaterThan D3) (List Number))
+size2 = refine [1, 2, 3, 4]
+-- size2 == Right (Refined [1, 2, 3, 4])
 ```
 
-- This works...
+### And, Or
+
+These type signatures are starting to get pretty hefty, but we can do better
+than that - we've also got `And` and `Or` for combining them.
+
+Let's only allow whole numbers from `1` to `100`...
 
 ```haskell
-refine "oh" -- nope
+Refined ((From D1) And (To D100)) Int
 ```
 
-- But this does
+Or indeed, allow all whole numbers EXCEPT `1` to `100`.
 
 ```haskell
-refine "well" -- great!
+Refined ((To D0) Or (From D101)) Int
 ```
 
-# Let's combine them
-
-We've also got `And` and `Or` for combining them.
-
-- This will only allow whole numbers from `1` to `100`.
+This type describes the roll of a dice.
 
 ```haskell
-Refined ((From 1) And (To 100)) Int
+type Dice = Refined ((From D1) And (To D6)) Int
 ```
 
-- This will allow all whole numbers EXCEPT `1` to `100`.
-
-```haskell
-Refined ((To 0) Or (From 101)) Int
-```
-
-- This describes the roll of a dice.
-
-```haskell
-type Dice = Refined ((From 1) And (To 6)) Int
-```
-
-- Or something rather stupid.
+Or this one describes the first bunch of prime numbers, and is all a bit silly
+to be honest.
 
 ```haskell
 type Prime 
   = Refined 
-      (Or (Equal 2) 
-        (Or (Equal 3) 
-          (Or (Equal 5) 
-            (Or (Equal 7) 
-              (Or (Equal 11) 
-                (Or (Equal 13) (Equal 17))
+      (Or (Equal D2) 
+        (Or (Equal D3) 
+          (Or (Equal D5) 
+            (Or (Equal D7) 
+              (Or (Equal D11) 
+                (Or (Equal D13) (Equal D17))
               )
             )
           )
