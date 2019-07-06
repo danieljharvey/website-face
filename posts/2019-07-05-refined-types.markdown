@@ -392,7 +392,7 @@ divide :: Number -> Divide -> Number
 divide a b = a / (unrefine b)
 ```
 
-### JSON validators
+### Automatic JSON validation
 
 So let's say we have this data type using `Refined`...
 
