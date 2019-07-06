@@ -8,10 +8,6 @@ Needless to say, it was a resounding success so I thought I would share an
 adapted version of the slides so that you can all learn to be as learned as me
 when it comes to such a topic.
 
-### Types 
-
-Do we even care? What are we trying to avoid? What's in it for us?
-
 Let's start by listing some things that we as programmers generally agree we don't particularly like:
 
 ### Runtime errors caused by Javascript YOLO
@@ -357,7 +353,7 @@ This type describes the roll of a dice.
 type Dice = Refined ((From D1) And (To D6)) Int
 ```
 
-Or this one describes the first bunch of prime numbers, and is all a bit silly
+Or this one, which describes the first bunch of prime numbers, and is all a bit silly
 to be honest.
 
 ```haskell
@@ -376,20 +372,29 @@ type Prime
       ) Int
 ```
 
-# So what can we do with them?
+### Back to our stupid contrived problems...
 
-# JSON validators
-
-- We could change this data type...
+Now with the power of `Refined` types, our defensive `printName` function is pretty much unnecessary...
 
 ```haskell
-type AlcoholUser
-  = { name :: String
-    , age  :: Int
-    }
+type Name = Refined (SizeFrom 1) String
+
+printName :: Name -> String
+printName name = unrefine name
 ```
 
-- To use `Refined`...
+Plus we can make a type to make division safe from fear, at last..
+
+```haskell
+type Divide = Refined (Not (Equal 0)) Number
+
+divide :: Number -> Divide -> Number
+divide a b = a / (unrefine b)
+```
+
+### JSON validators
+
+So let's say we have this data type using `Refined`...
 
 ```haskell
 type AlcoholUser
@@ -398,295 +403,17 @@ type AlcoholUser
     }
 ```
 
-- ...we can then automatically create validators that include `Refined` types, so our APIs can be fussy and reject bad data before it even makes it into our program.
-
-# Defensive programmming
-
-- This printName function is now unnecessary
-
-```typescript
-type Name = Refined (SizeFrom 1) String
-
-function printName(name: Name) {
-  return name
-}
-```
-
-- And this division can now be safe from fear
-
-```typescript
-type Divide = Refined (Not (Equal 0)) Number
-
-function divide(a: Number, b: Divide) {
-  return a / b
-}
-```
-
-
-<!--
--->
-
-# Problem: keeping test data up to date
-
-Let's say we have a data type that we get from a server.
-
-```haskell
-type User 
-  = { name      :: String
-    , age       :: Number
-    , likesDogs :: Boolean
-    }
-```
-
-* Oh shit! It's changed!
-
- ```haskell
-type User 
-  = { name     :: String
-    , age      :: Number
-    , petNames :: Array String
-    }
-```
-
-* Now where do we need to change it?
-
-# Where does the data live?
-
-- On the server
-- Initial / default data in the app
-- Every piece of test data
-- (hopefully) in the type signature itself
-
-* Changing all those every time our data changes is going to be a 1x pain in
-  the arse.
-* Especially if we want to make sure they still all agree with one another
-
-# What if....?
-
-We could just auto generate from the types instead?
-
-# That's right
-
-![](./src/oh-shit.png)
-
-# Arbitrary type generation
-
-- We're pretty comfortable with `Math.random()` to get a random number, right?
-
-```
-1, 5, 34, 45645, 34534, 345345
-```
-
-- So why don't use it to take that `Number`, and get a `Char`?
-
-```
-'a', 'e', '{', '>', '^'
-```
-
-- And use that to make random `String` values?
-
-```
-"sdfsdfsdf", "sdfsdfsdfjhj", "234hj23h324hj"
-```
-
-- And take these values and make random `Array` values of them?
-
-```
-["sdfsdfsd", "sdfhkhajkrghkjaehkjergeg", "234h234h23iuy4uh2irf"]
-```
-
-# OK, but less nonsense.
-
-- Is it such a leap to take our `User` type and generate one of those?
-
-```haskell
-type User 
-  = { name      :: String
-    , age       :: Number
-    , likesDogs :: Boolean
-    }
-```
-
-- Why the hell not? All the fields are pretty straightforward to generate.
-
-```javascript
-{ name: "fdjksgjjkfjfsdjskfdgjkljklfdsgjkaeaerg",
-  age: 234328948,
-  likesDogs: false
-}
-```
-
-- I confess, usually it ends up more like this
-
-```javascript
-{ name: "&n234n2***()()()((()()()()()()()jhsdv87se78&**&&**&A(SD(*A&*SA&*(&*ASDS(&D(SADfd*()A*(D*&(DS&SD&*(&*&(*DSAjksgjjkfjfsdjskfdgjkljklfdsgjkaeaerg",
-  age: 232343423448,
-  likesDogs: true
-}
-```
-
-# What for though?
-
-- We could use this values in tests
-- (or even do Property Testing - a topic for another time)
-- Or indeed to make a quick mock API implementation
-- Or test our UIs to make sure they look great with many values inside
-
-# Bringing it all together
-
-- This Arbitrary nonsense gets even more powerful if we bring these `Refined`
-  types back into it.
-
-```haskell
-type AlcoholUser
-  = { name :: String
-    , age  :: Int
-    }
-```
-
-- Then we can automatically generate pretty helpful data
-
-```haskell
-type AlcoholUser
-  = { name :: Refined (And (SizeFrom 1) (SizeTo 20)) String
-    , age  :: Refined (From 18) Int
-    }
-```
-
-- OK, still not perfect.
-
-```javascript
-{ name: "SDJHSDJHHJHJSDHHAhha",
-  age: 2389238283
-}
-```
-
-- But that's just a matter of further refinement.
-
-# Yeah
-
-![](./src/oh-shit-3.png)
-
-# Practical applications for your practical application
-
-- Generating contract tests
-
-- Each of our backend services generates 1000 randomly generated JSON responses on build
-
-- And each frontend generates 1000 randomly generated JSON requests on build
-
-- And before we deploy, each loads the other's responses and makes sure it
-  understands all of them
-
-- It's like a PACT contract test, but we don't need to spin up a mock server
-
-- Or really update anything but the code itself
-
-- Nice.
-
-# And what if I told you...
-
-- You could use this method to generate an entire set of API documentation?
-
-# shitttt
-
-![](./src/oh-shit-4.png)
-
-# OK.
-
-- This seems great
-- but
-- what
-- is
-- in
-- it
-- for
-- me,
-- a
-- React
-- developer
-- that
-- only
-- really
-- came
-- here
-- for
-- pizza
-- ?
-
-# Good question
-
-You can have all these things
-
-- In React
-
-- Using Webpack
-
-- `yarn add purescript spago purs-loader`
-
-- `spago init`
-
-- Then crack this into your webpack config:
-
-```javascript
-module: {
-    rules: [
-      {
-        test: /\.purs$/,
-        exclude: /node_modules/,
-        loader: 'purs-loader',
-        options: {
-          src: [
-            'src/**/*.purs'
-          ],
-          spago: true,
-        }
-      }
-    ]
-  }
-```
-
-- Create a `Purescript` component using `Purescript-react`
-
-- Then import it with `const { NiceComponent } = import('./purs/niceComponent')`
-
-- And plop it into your jsx.
-
-```javascript
-<YourWebApp>
-  <NiceComponent />
-</YourWebApp>
-```
-
-- Profit.
-
-# For real?
-
-- Yeah. We do this. It's really nice.
-
-- Can I use it with `technology x`?
-
-- Sure. Once Webpack has chewed it up it doesn't care how the `React` component
-  was made.
-
-- Is Purescript complicated?
-
-- If you want it to be, sure.
-
-- But not for `React` development.
-
-# once more for the back
-
-![](./src/oh-shit-4.png)
-
-# So, in short
-
-- Taxes are good
-
-- Ask more from your public services
-
-# That's all
-
-Any questions?
-
-
+...if we want to use it as an API request, sounds like a lot of work right?
+Maybe not! Because `refined` instances have `fromJSON` and `toJSON` instances
+for `Aeson` (or for `Argonaut` in Purescript) then we can automatically decode
+them from `JSON` and make the decoding fail if the `predicate` does not pass.
+
+This way, anywhere in our app, `name` will always be non-empty. and `age` will
+always be `18` or more.
+
+### Well, shit.
+
+Yep. For more details, check out the [Refined Haskell
+library](http://hackage.haskell.org/package/refined) or indeed the
+[purescript-refined](https://github.com/danieljharvey/purescript-refined)
+library which I ported from the Haskell one.
