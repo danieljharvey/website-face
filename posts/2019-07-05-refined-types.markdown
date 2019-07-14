@@ -1,6 +1,6 @@
 ---
 title: Refine, fine, fine
-tags: haskell
+tags: haskell, purescript, refined
 ---
 
 About a month ago I gave a talk about `Refined` types at a React meetup.
