@@ -86,6 +86,10 @@ li {
   font-size: 90%;
 }
 
+ol li {
+    font-weight: 500;
+}
+
 code {
   white-space: pre-wrap;
 }
