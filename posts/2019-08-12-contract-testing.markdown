@@ -25,10 +25,9 @@ and the contract test confirms that the backend is indeed "cool" with that.
 
 ### What is Quickcheck?
 
-Quickcheck is a Haskell library that has since been ported to many other
-languages, that does a thing called Property Testing. A nice intro lives here
+Quickcheck is a Haskell library that does a thing called Property Testing. It has since been ported to many other languages. A nice intro lives here
 at [School of
-Haskell](https://www.schoolofhaskell.com/user/pbv/an-introduction-to-quickcheck-testing) - in short it lets us test properties about things by randomly generating examples and seeing if they work.
+Haskell](https://www.schoolofhaskell.com/user/pbv/an-introduction-to-quickcheck-testing) - the tldr is that it lets us test properties about our programs by randomly generating examples and seeing if they fit rules that we define.
 
 ### So, what is your idea then?
 
@@ -113,3 +112,5 @@ Then, for responses, we do the same thing in reverse:
 5. If it does - great!
 
 Essentially, a contract between two services is a complete set of these.
+
+
