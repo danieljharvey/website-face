@@ -5,7 +5,7 @@ tags: haskell, free, monad
 
 When I first started working at a *Serious Software Place*, I remember being very excited about the idea of testing things and dependency injection and purity and all such things. One day, I was spouting about this (presuming, I suppose, that everybody else was also so new to and thus enamoured with the topic), as well as these `Functors` I had been reading about, and one of the more senior engineers said, "Well *(raises eyebrows suggestively)*...you're going to **LOVE** Free Monads!".
 
-Now, many people that know me would agree I am a fairly jaded man, but I have to admit that even my interest was pigued. However, it's taken me absolutely fucking ages to work out what they are and how they relate to this original promise, and I *think* they do, just not how I thought.
+Now, many people that know me would agree I am a fairly jaded man, but I have to admit that even my interest was piqued. However, it's taken me absolutely fucking ages to work out what they are and how they relate to this original promise, and I *think* they do, just not how I thought.
 
 ### The Intuition For Free Monads
 
@@ -115,7 +115,7 @@ Right. In this example, `MoybeF` is our dog. It's a plain old functor that doesn
 
 ```haskell
 -- Free turns MoybeF (a mere functor)
--- into Mobye (a mighty monad)
+-- into Moybe (a mighty monad)
 type Moybe a = Free MoybeF a
 ```
 
