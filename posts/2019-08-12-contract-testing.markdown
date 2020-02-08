@@ -5,8 +5,7 @@ tags: purescript, haskell, testing
 
 Hello. I hope you are well. Over the last few months I have been trying out a
 method for generating `Contract Tests` between services using `Arbitrary`
-instances frQuickcheck which
-I thought it might be good to share. It's not particularly clever, which is
+instances from Quickcheck which I thought it might be good to share. It's not particularly clever, which is
 partially what I like about it, and as a result I may not have been the first
 to come up with it. If I have therefore somewhat stolen your thunder please
 accept my apologies in advance.
@@ -29,7 +28,7 @@ Quickcheck is a Haskell library that does a thing called Property Testing. It ha
 at [School of
 Haskell](https://www.schoolofhaskell.com/user/pbv/an-introduction-to-quickcheck-testing) - the tldr is that it lets us test properties about our programs by randomly generating examples and seeing if they fit rules that we define.
 
-### So, what is your idea then?
+### So, what is your so-called idea then?
 
 OK. So one of the main concepts behind QuickCheck is the `Arbitrary` typeclass.
 Any datatype with an instance of this typeclass is able to generate random
@@ -41,7 +40,7 @@ data Horse
   | SmallHorse
 
 instance Arbitrary Horse where
-  arbitrary 
+  arbitrary
     = oneOf [ pure BigHorse
             , pure SmallHorse
             ]
@@ -73,7 +72,7 @@ data APIRequest
   = APIRequest
       { name      :: String
       , age       :: Int
-      , horseSize :: Horse 
+      , horseSize :: Horse
       }
     deriving (Generic, Arbitrary, FromJSON)
 ```
@@ -93,7 +92,7 @@ data APIResponse
 Note that in both cases we have derived an instance of both `Generic` and `Arbitrary` - this means we don't need to work out how to generate `arbitrary` values - so long as the types inside have their own `Arbitrary` instances.
 
 These types are shown in `Haskell`, but the equivalent pair will also exist in
-the `Purescript` frontend, so I won't duplicate them here. 
+the `Purescript` frontend, so I won't duplicate them here.
 
 Our testing is going to work like this:
 
@@ -113,4 +112,6 @@ Then, for responses, we do the same thing in reverse:
 
 Essentially, a contract between two services is a complete set of these.
 
+### That's all great but my frontend isn't written in Haskell
 
+How to generate in Typescript using io-ts
