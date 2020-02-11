@@ -114,7 +114,7 @@ Then, for responses, we do the same thing in reverse:
 4. Our frontend will decode each piece of JSON and see if it makes sense
 5. If it does - great!
 
-Essentially, a contract between two services is a complete set of these for each endpoint.
+Essentially, a contract between two services is a complete set of these for each endpoint. In this article I will explain the `Haskell` part of this, and will follow with the front end portion in the next one.
 
 ### Creating the sample responses
 
@@ -136,102 +136,168 @@ instance Arbitrary APIResponse where
 
 `genericArbitrary` is provided by the `generic-arbitrary` package which allows `Arbitrary` instances to be created for any datatype with a `Generic` instance. (For more intro on the idea of generics, the [Hackage](https://hackage.haskell.org/package/base-4.12.0.0/docs/GHC-Generics.html) page is a good start.)
 
-`ToJSON` is provided by `Aeson`, the excellent package for all dealings with JSON, and deserves a whole post of it's own.
+`ToJSON` is provided by `Aeson`, the excellent package for all dealings with JSON, and deserves a whole post of it's own. For our purposes, all we need to know is that for any datatype with a `Generic` instance, we can derive a free typeclass for turning it to and from JSON.
 
-The special sauce for all of this action is the `generate` function from `Test.QuickCheck.Gen`, which generates any number of values for a given `Arbitrary` instance:
+### Generating the sample responses
+
+The special sauce for all of this action is the `generate` function from
+`Test.QuickCheck.Gen`, which generates any number of values for a given
+`Arbitrary` instance. We use this with a bunch of other housekeeping functions to take these 100
+items and turn them into 100 files. I have broken this down into a bunch of
+functions so that it's hopefully easier to follow.
+
+Firstly, a couple of helpers for adding index numbers to lists...
 
 ```haskell
--- this will generate 100 instances of any given arbitrary value
-getResponses :: (Arbitrary a) => IO [a]
-getResponses = generate $ vector 100
-```
-
-We use this with a bunch of other housekeeping functions to take these 100 items and turn them into 100 files.
-
-```haskell
--- turn a list of anything into a list of tuples with an index in the first
--- position
--- ['A', 'B'] -> [(1, 'A'), (2, 'B')]
 indexList :: [a] -> [(Int, a)]
 indexList as =
   List.zip [1 ..] as
 
--- take a root path and a file number and return a file path
+-- indexList ['A', 'B'] == [(1, 'A'), (2, 'B')]
+```
+
+...and creating a file path using said index...
+
+```haskell
 createPath :: String -> Int -> String
 createPath path index =
   "./" <> path <> "/" <> (show index) <> ".json"
 
--- this will generate 100 instances of any given arbitrary value
+-- createPath "output" 1 == "./output/1.json"
+```
+
+Next, we will make our functions for generating instances and saving them to
+files. This first function uses a `Proxy` (from
+[Data.Proxy](https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Proxy.html))
+to pass the type we would like to generate (as such). We have chosen `100` as
+it is as good a number as any.
+
+```haskell
 getResponses :: (Arbitrary a) => Proxy a -> IO [a]
 getResponses _ = generate $ vector 100
+```
 
--- this will turn a pile of responses into a pile of JSON responses
-jsonifyList :: (ToJSON a) => [a] -> [BS.ByteString]
-jsonifyList = fmap encode
+This next function takes our list of randomised values, turns them to JSON, and pops them in a `Tuple` along with an index.
 
--- create our responses, turn them to JSON, add numbers for file naming
+```haskell
 listToJSON :: (ToJSON a) => [a] -> [(Int, BS.ByteString)]
 listToJSON = (indexList . jsonifyList)
+  where
+    jsonifyList = fmap encode
+```
 
--- combine these functions
--- Note the `Proxy` which we use to pass the type around
-responsesToJSON ::
-  (ToJSON a, Arbitrary a) =>
-  Proxy a ->
-  IO [(Int, BS.ByteString)]
-responsesToJSON arbType = listToJSON <$> (getResponses arbType)
+Finally, we put them together along with some glue code (using `writeFile` from
+`Data.ByteString.Lazy`) to save the generated `JSON` files.
 
--- save a json file using the path, number and JSON bytestring
-saveFile ::
-  String ->
-  (Int, BS.ByteString) ->
-  IO ()
-saveFile path (index, json) =
-  BS.writeFile (createPath path index) json
-
--- generate 100 APIResponse values and save them in the srcPath folder
+```haskell
 contractWrite ::
   (ToJSON a, Arbitrary a) =>
   Proxy a ->
   String ->
   IO ()
 contractWrite arbType srcPath = do
-  responses <- responsesToJSON arbType
+  let saveFile = \path (index, json) ->
+        BS.writeFile (createPath path index) json
+  responses <- listToJSON <$> (getResponses arbType)
   mapM_ (saveFile srcPath) responses
+```
 
--- example of using the Proxy to pass our APIResponse type to contractWrite
+To use it with our datatype, we use a `Proxy` as such to pass it the type we
+want (in our case, `APIResponse`, but the same code will work for any type with
+`Arbitrary` and `ToJSON` instances)
+
+```haskell
 contractWriteAPIResponses :: String -> IO ()
 contractWriteAPIResponses srcPath =
   contractWrite (Proxy :: Proxy APIResponse) srcPath
 ```
 
-There is a lot of code here, but only because it has been broken down for clarity.
+If we crack this open in `ghci` we can run `contractWriteAPIResponses "sample"`, and it will create files called `1.json`, `2.json` (up to `100.json`) in the `sample` folder in the current working directory.
 
-Example usage would be `contractWriteAPIResponses "sample"`, which would create files called `1.json`, `2.json` (up to `100.json`) in the `sample` folder in the current working directory. Note we have used a `Proxy` type here to pass the type around. An alternative way to do this could be a mixture of `TypeApplications` and `ScopedTypeVariables` but in the spirit of #simplehaskell we'll avoid them.
+Our frontend tests can now read these and make sure that they understand them.
+But how do we make sure our backend understands the front end requests?
 
 ### Reading the sample requests
 
-Assuming we now have a path that points to a folder full of 100 json files, we can write code to attempt to read them. We are reusing the `createPath` function from above, but other than, this should do it.
+Assuming that our front end has also created some sample requests in a similar fashion, reading them and checking they are decodable is a simpler affair.
+
+Given a path that points to a folder full of 100 json files, we can write code to attempt to read them. We are reusing the `createPath` function from above, but other than, this should do it.
+
+This function takes a `Proxy` for our decoding type, a path and an index, and
+tries to decode the file it finds.
 
 ```haskell
--- read the file from the path and index provided, and try to decode it
-testFile :: FromJSON a => String -> Int -> IO (Maybe a)
-testFile path i = do
+testFile :: FromJSON a => Proxy a -> String -> Int -> IO (Maybe a)
+testFile _ path i = do
   str <- BS.readFile (createPath path i)
   case eitherDecode str of
     Left e -> putStrLn (show e) >>= \_ -> pure Nothing
     Right b -> pure (Just b)
-
--- try to decode 1.json, 2.json from the given path
--- will return only the successful results
-contractRead :: FromJSON a => String -> IO [a]
-contractRead srcPath = do
-  maybeFound <- mapM (testFile srcPath) [1 .. 100]
-  pure $ catMaybes maybeFound
 ```
 
-`contractRead "sample"` will attempt to read 100 numbered `.json` files in the `sample` folder.
+Here we take a path to the folder full of files and attempt to read `100`
+numbered `.json` files in it.
 
-### That's all great but my frontend isn't written in Haskell
+```haskell
+contractRead :: FromJSON a => Proxy a -> String -> IO Int
+contractRead arbType srcPath = do
+  maybeFound <- mapM (testFile arbType srcPath) [1 .. 100]
+  pure $ length $ catMaybes maybeFound
+```
 
-How to generate in Typescript using io-ts
+And here we put it all together using our `APIRequest` type.
+
+```haskell
+contractReadAPIRequest :: String -> IO Int
+contractReadAPIRequest srcPath =
+  contractRead (Proxy :: Proxy APIRequest) srcPath
+```
+
+Cracking open `ghci` and running `contractRead "sample"` will attempt to read 100 numbered `.json` files in the `sample` folder.
+
+### Digression 1.
+
+Note we have used a `Proxy` type here to pass the type around. An alternative way to do this could be a mixture of `TypeApplications` and `ScopedTypeVariables` but in the spirit of `#simplehaskell` we'll avoid them.
+
+### Digression 2.
+
+Whilst preaching simplicity, it seems enjoyably hypocritical to point out in
+the same breath that we needn't have made a standalone instance of `arbitrary`
+each time, and it's actually a great opportunity to crack open `DerivingVia`.
+
+An alternative method could looks something like this, and save up to 15
+characters per datatype.
+
+```haskell
+-- this newtype can derive Arbitrary via Generic, so we use Deriving Via to
+-- steal it's powers!
+newtype GenericArb a
+  = GenericArb {getGenericArb :: a}
+  deriving (Generic)
+
+instance (Generic a, Arbitrary a) => Arbitrary (GenericArb a) where
+  arbitrary = genericArbitrary
+
+data APIRequest2
+  = APIRequest2
+      { name2 :: String,
+        age2 :: Int,
+        horseSize2 :: Horse
+      }
+  deriving (Generic, FromJSON)
+  deriving (Arbitrary) via (GenericArb APIRequest2)
+
+data APIResponse2
+  = APIResponse2
+      { weight2 :: Int,
+        goodHorse2 :: Bool
+      }
+  deriving (Generic, ToJSON)
+  deriving (Arbitrary) via (GenericArb APIResponse2)
+```
+
+### Make sense?
+
+No. Thought not. Regardless, I'll follow up with how to great the front end
+part. I'll be using `Typescript` because quite frankly if you understand this
+then doing it in `Purescript` isn't wildly different.
