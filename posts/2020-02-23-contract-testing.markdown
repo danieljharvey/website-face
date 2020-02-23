@@ -5,10 +5,10 @@ tags: purescript, haskell, testing
 
 Hello. I hope you are well. Over the last few months I have been trying out a
 method for generating `Contract Tests` between services using `Arbitrary`
-instances from Quickcheck which I thought it might be good to share. It's not particularly clever, which is
+instances from [Quickcheck](https://hackage.haskell.org/package/QuickCheck) which I thought it might be good to share. It's not particularly clever, which is
 partially what I like about it, and as a result I may not have been the first
 to come up with it. If I have therefore somewhat stolen your thunder please
-accept my apologies in advance.
+accept my apologies in advance and then maybe do some reading around SEO.
 
 ### What is Contract Testing anyway?
 
@@ -20,7 +20,13 @@ is a good tool - HOWEVER it takes a lot of work and I am lazy so there what I
 am going to describe is hopefully less work.
 
 For example, a frontend says "I am going to call `/users/horse/1000` - is that cool?"
-and the contract test confirms that the backend is indeed "cool" with that.
+and the contract test confirms that the backend is indeed "cool" with that,
+shows what kind of thing it would return from that call, to which the frontend
+confirms it is also "cool" with that.
+
+![This is the agreement between the services probably looked
+like.](/images/contract-handshake.png "This is what the agreement between the services
+probably looked like.")
 
 ### What is Quickcheck?
 
@@ -55,6 +61,8 @@ instance Arbitrary Horse where
 ```
 
 This datatype `Horse` describes the two kinds of horse, `BigHorse` and `SmallHorse`. As is hopefully hand-wavingly evident, when the `arbitrary` function is run it returns one of `BigHorse` or `SmallHorse`.
+
+![This is a horse.](/images/contract-horse.png "This is a horse.")
 
 If we can make one `Horse`, then surely we can make a load of them? Indeed!
 This is what the instance for `List` look like - the `Arbitrary a =>`
@@ -116,6 +124,8 @@ Then, for responses, we do the same thing in reverse:
 
 Essentially, a contract between two services is a complete set of these for each endpoint. In this article I will explain the `Haskell` part of this, and will follow with the front end portion in the next one.
 
+![These are all horses.](/images/contract-horses.png "These are all horses.")
+
 ### Creating the sample responses
 
 We're going to need to add some typeclass instances for our `APIResponse` type first, so let's change it to the following:
@@ -137,8 +147,6 @@ instance Arbitrary APIResponse where
 `genericArbitrary` is provided by the `generic-arbitrary` package which allows `Arbitrary` instances to be created for any datatype with a `Generic` instance. (For more intro on the idea of generics, the [Hackage](https://hackage.haskell.org/package/base-4.12.0.0/docs/GHC-Generics.html) page is a good start.)
 
 `ToJSON` is provided by `Aeson`, the excellent package for all dealings with JSON, and deserves a whole post of it's own. For our purposes, all we need to know is that for any datatype with a `Generic` instance, we can derive a free typeclass for turning it to and from JSON.
-
-### Generating the sample responses
 
 The special sauce for all of this action is the `generate` function from
 `Test.QuickCheck.Gen`, which generates any number of values for a given
@@ -216,6 +224,10 @@ If we crack this open in `ghci` we can run `contractWriteAPIResponses "sample"`,
 
 Our frontend tests can now read these and make sure that they understand them.
 But how do we make sure our backend understands the front end requests?
+
+![I am feeling bad about how many words there
+are.](/images/contract-business-man.png "I am feeling bad about how many words
+there are.")
 
 ### Reading the sample requests
 
