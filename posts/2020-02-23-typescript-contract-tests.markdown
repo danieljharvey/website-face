@@ -62,7 +62,7 @@ const ok = UserShape.decode(userJson))
 
 const badUserJson = { blah: "dfgdfgdgf" }
 
-const no = UserShape,decode(badUserJson)
+const no = UserShape.decode(badUserJson)
 // no == Left with an error message
 ```
 
