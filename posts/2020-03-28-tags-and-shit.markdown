@@ -81,10 +81,8 @@ tagging types for cheap, which I'd like to share today.
 Here is the whole library:
 
 ```typescript
-const topSecret = Symbol()
-
 type Nominal<T> = {
-    readonly topSecret: T
+    readonly symbol: T
 }
 
 export type Tagged<Tag extends string, A> = A & Nominal<Tag>
