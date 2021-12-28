@@ -216,6 +216,13 @@ figcaption {
   }
 }
 
+blockquote {
+    background-color: #d8f1ef;
+    padding: 5px 10px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
 /* code highlighting */
 a.sourceLine {
   color: var(--green);
