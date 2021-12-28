@@ -97,7 +97,7 @@ code {
 p code,
 li code {
   color: var(--magenta);
-  font-size: 120%;
+  font-size: 110%;
 }
 
 pre.sourceCode {
@@ -105,6 +105,7 @@ pre.sourceCode {
   background-color: var(--code-bg);
   padding: 10px;
   font-size: 120%;
+  border: 1px solid #d2d0b3;
 }
 
 figure {
@@ -217,10 +218,15 @@ figcaption {
 }
 
 blockquote {
-    background-color: #d8f1ef;
-    padding: 5px 10px;
-    margin-left: 0px;
-    margin-right: 0px;
+  background-color: #d8f1ef;
+  padding: 5px 10px;
+  margin-left: 0px;
+  margin-right: 0px;
+  border: 1px solid var(--cyan);
+}
+
+blockquote p {
+  margin: 10px 0;
 }
 
 /* code highlighting */
