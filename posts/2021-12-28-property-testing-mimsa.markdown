@@ -67,7 +67,9 @@ A property test might be `add 0 a == a`, given any `a`. When this is run by
 [quickcheck](https://hackage.haskell.org/package/QuickCheck) or
 [fast-check](https://github.com/dubzzz/fast-check) the property testing
 framework will run the test with loads and loads of different values for `a`,
-and return all the ones that break it (in this case, none of them).
+and return all the ones that break it (in this case, none of them). If the
+tests all pass then we know the property __adding zero to a number returns the same
+number__ holds.
 
 Property testing is very useful for finding edge cases in functions, and used
 well, can be a lot more thorough than unit tests, for not a lot more effort.
@@ -185,9 +187,13 @@ the cartisian product of all inputs methodically then we could cover all inputs
 and run the tests against them all. This would ensure a) the same results each
 time and b) that we could cache the results once and never run them again.
 
-However, if the input type contains an `Int`, `String`, `Array` or recursive type 
-(such as `type List a = Nil | Cons a (List a)`) then generating a complete set
-of inputs is no longer practical. 
+However, if the input type contains an `Int`, `String`, `Array` or any recursive 
+type then generating a complete set of inputs is no longer practical. 
+
+> A recursive type is one that contains itself. For instance, a linked list is
+> defined in `mimsa` as `type List a = Nil | Cons a (List a)`. The second `List
+> a` argument to `Cons` means "and another list" so this datatype can grow and
+> grow and grow.
 
 #### String and number spaces just too huge
 
