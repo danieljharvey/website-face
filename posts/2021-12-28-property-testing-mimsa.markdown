@@ -181,10 +181,10 @@ but worth mentioning.
   | _ -> True
 ```
 
-Given that a `Maybe` can of one two things, as can a `Boolean`, 
-there are `2 x 2 x 2 x 2 x 2 == 32` potential inputs here. If we generated 
-the cartisian product of all inputs methodically then we could cover all inputs
-and run the tests against them all. This would ensure a) the same results each
+Given that a `Maybe` is either `Nothing` or the value inside, and `Boolean` can
+be 1 of 2 values, there are `1 + 1 + 1 + 1 + 2 == 6` potential inputs here. 
+It doesn't seem out of the question to auto-generate all the possible values 
+here and run tests against them all. This would ensure a) the same results each
 time and b) that we could cache the results once and never run them again.
 
 However, if the input type contains an `Int`, `String`, `Array` or any recursive 
