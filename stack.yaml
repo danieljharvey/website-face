@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/13.yaml
+resolver: nightly-2022-02-14 
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,9 +40,9 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 # extra-deps: []
-extra-deps:
-- hakyll-4.14.0.0@sha256:28aab547aa94202d486328aa4bbcd02ecbefc4e5d42dfa15e8137b731a4f5d55,9059
-- file-embed-0.0.13.0@sha256:a819e90b91cab919ffef5895ab6e1b2a44eac395a585f489b0c289a4a12d1c54,1396
+#extra-deps:
+#- hakyll-4.14.0.0@sha256:28aab547aa94202d486328aa4bbcd02ecbefc4e5d42dfa15e8137b731a4f5d55,9059
+#- file-embed-0.0.13.0@sha256:a819e90b91cab919ffef5895ab6e1b2a44eac395a585f489b0c289a4a12d1c54,1396
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
