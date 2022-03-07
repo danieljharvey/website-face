@@ -11,46 +11,19 @@ on Hindley Milner (I've also seen it called Damas Milner, please feel free to
 ping with the actual truth, fact fans). This kind of type system is the kind
 you'll find under OCaml, Elm, Haskell and Purescript, although each language has their own variations (and in the case of Haskell, a terrifying number of extensions to it). 
 
-## Stages of typechecking
-
-The system we'll be looking at today uses three stages called `Elaboration`, `Unificiation` and `Substitution`. Many explanations of HM combine all these into one big stage, which is simpler in some ways, but more difficult once things get spicy. I hope these stages become apparently as we work through the example, but these
-stages basically mean:
-
-### Elaboration
-
-Here go through the expression we'd like to typecheck, marking each
-  part of the AST with the thing we think it is (and if we don't know, we sort of guess). We'll also produce
- a set of constraints about the types we've worked out (a constraint is
- something like "I don't know `a` or `b` are but I know they're the same
- thing")
-
-### Unification
-
-Here we go through all of the constraints and "solve" them by
-  smashing them together and seeing what we learn. For instance, if we have the
-  constraint "`a` and `Boolean` are the same" then we have learned "wherever we
-  see `a` we should change it for a `Boolean`. However if we have the
-  constraint "`Integer` and `Boolean` are the same" then we have learned that
-  the expression is invalid and we should show the user a type error. The
-  outcome of unification is either a type error or a set of substitutions, such
-  as "replace all `c` values with `String`".
-
-### Substitution
-
-Assuming we had no type errors in the previous step, then
-  subsitution is the process of taking all the things we have learned and
-  applying them to both to expression and to the other substitutions. For
-  example, if we have learned "`a` is an `Integer`" then we can change any `a`
-  values in our expression to `Integer`, and also change the substitution "`c`
-  is a pair of `a` and `b`" into "`c` is a pair of `Integer` and `b`".
-
--- Note: I've said "AST" - this means Abstract Syntax Tree - it's code,
-represented as a data structure. This will hopefully make sense in due course.
-
 ## A working example
 
 We're going to start by typechecking the simplest stuff, and then build up
-features as we go.
+features as we go. There are three stages to our algorithm, `Elaboration`,
+`Unification` and `Substitution`. We'll introduce them as we need them.
+
+> __Elaboration__
+>
+> Here go through the expression we'd like to typecheck, marking each
+>   part of the AST with the thing we think it is (and if we don't know, we sort of guess). We'll also produce
+> a set of constraints about the types we've worked out (a constraint is
+> something like __"I don't know `a` or `b` are but I know they're the same
+> thing"__)
 
 ### Literals
 
@@ -90,8 +63,6 @@ is, then we return the type from the environment.
 
 ### If / Then / Else
 
-#### Elaboration
-
 An if statement in our language is an expression, meaning it must return
 something from both the `then` and the `else` branch. It contains three
 sub-expressions, one for the predicate we are testing (which must be of type
@@ -108,21 +79,13 @@ How do we ensure all our rules work out? That's the job of the constraints that
 we have generated (shown in red). We have one that ensures the type of `True` matches
 `Boolean`, and another that ensures the types of `1` and `2` are the same.
 
-For the first time, the `Elaboration` stage has created some constraints, so
-we'll need to unify them.
+> __Unification__ 
+>
+> Now that we have constraints, we need to check they make sense. Unification in the context of typechecking is about smashing two things
+> together and seeing what we learn. 
+>
+> The outcome of unification is either a type error or a set of substitutions, such as __"replace all `c` values with `String`"__.
 
-#### Unification 
-
-Unification in the context of typechecking is about smashing two things
-together and seeing what we learn. Broadly, the following things can happen:
-
-- The two things are the same, so everything is fine and we learn nothing new
-
-- The two things are different and at odds with one another (ie, we try and
-  unify `Integer` with `String`) - this creates an error
-
-- One (or both) of the things are unification variables, creating a
-  `Substitution`. We'll encounter this in more detail shortly.
 
 Here the two things are the same in both cases, so everything is fine and we
 learn nothing new.
@@ -131,21 +94,26 @@ learn nothing new.
 
 ### Lambda
 
-When elaborating lambdas, we don't know what the argument will be, so instead
-we'll guess it. We do this by creating a fresh unknown type variable called a
-"unification variable", here we
-use `unknown-1`. Each of these should be unique within the typechecking.
+A lambda is a function abstraction. When elaborating lambdas, we don't know what the type of the argument will be. Different type systems have different approaches to this problem. 
+One solution is to make the programmer annotate the argument with a type (ie,
+`\(a: String) -> ...`). However, Hindley Milner typechecking is all about
+minimising type annotations, so instead we'll guess it. We do this by creating a fresh unknown type variable called a
+"unification variable". Each of these should be unique within the typechecking,
+so they often use numbers with an internal counter to generate fresh ones.
+We're going to use the unimaginative `unknown-1`.
 
 ![Elaborating lambda](/images/typecheck-1-elaborate-lambda.png)
 
 Then, when we elaborate the body of the lambda, we add `a == unknown-1` to the
-environment.
+environment, which makes typechecking the variable `a` straightforward, making
+the type of the whole lambda `unknown-1 -> unknown-1` (the `->` meaning "a
+function from a to b")
 
 ### Function application
 
 #### Elaboration
 
-Given the `id` function has already been defined, let's apply a value to it.
+What's the use in functions if we can't apply values to them? Given the `id` function has already been defined, let's apply a value to it.
 
 ![Elaborating function application](/images/typecheck-1-elaborate-application.png)
 
@@ -154,23 +122,76 @@ by creating a constraint between the first `unknown-1` and `Boolean`. Then the
 return type from elaboration is the second half of the function type (also
 `unknown-1`).
 
-Surely it should be `Boolean` though right? That's where the other stages we've been ignoring come into play.
+Surely it should be `Boolean` though right? No, but also, yes, but also, it's
+complicated... 
 
-#### Unification 
+#### Unifying our new constraint 
+
+Let's look at the constraint we've generated during elaboration.
 
 ![Unifying function application](/images/typecheck-1-unify-application.png)
 
-When we unify `unknown-1 == Boolean`, because `unknown-1` is a unification
-variable, then it unifies with everything. This means we create one
-substitution, "replace all instances of `unknown-1` with `Boolean`".
+As we briefly mentioned earlier, we unify values to learn things about them. Because `unknown-1` is a unification variable, it represents an unknown thing that we are trying to find out more about.
+Unifying it with `Boolean` tells us `unknown-1` is actually `Boolean`, and therefore we can substitute any instance of `unknown-1` for `Boolean`.
 
-#### Substitution
+#### Apply the substitution
 
-Applying our substitution to the result of elaboration gives us our final type,
+We apply a substitution by changing all instances of one thing in a type for another. Applying a substitution to the result of elaboration gives us our final type,
 `Boolean`
 
 ![Substituting function application](/images/typecheck-1-substitute-application.png)
 
+> __Substitution__
+>
+> Assuming we had no type errors in the previous step, then
+>  subsitution is the process of taking all the things we have learned and
+>  applying them to both to expression and to the other substitutions.
+> 
+> For example, if we have learned __"`a` is an `Integer`"__ then we can change any `a`
+>  values in our expression to `Integer`, and also change the substitution __"`c`
+> is a pair of `a` and `b`"__ into __"`c` is a pair of `Integer` and `b`"__.
+
+
+
+### A bigger example
+
+To see Hindley Milner typechecking in action, here is a slightly bigger
+example. Here we'll see how we can get full type inference without a type
+annotation in sight.
+
+These diagrams are getting a bit out of hand now, so to be clear, our
+expression is `\a -> if a then 1 else 2`.
+
+![Elaborating a big lambda](/images/typecheck-1-elaborate-lambda-2.png)
+
+We start by elaborating the function argument, `a`. We have no idea what it is,
+so we create a unification variable, `unknown-1`, and use that instead.
+
+Then we move onto the body of the lambda, an if expression. The predicate
+expression is `a`. Fortunately, we already have the type for `a` in the type
+environment - so we can grab it. We don't know what `unknown-1` is yet, but we
+have another piece of information on our side - the predicate for an `if` must
+be a `Boolean`. We express this by creating a new constraint `unknown-1 ==
+Boolean`.
+
+The `then` and `else` expressions are both literals, so we can infer those
+quite simply, making `Integer` the return type of the `if` expression. There is
+also another constraint here, that both branches should have the same type -
+`Integer == Integer`.
+
+#### Unifying our new constraints
+
+We have two contraints from elaboration.
+
+First `Integer == Integer`, which teaches us nothing (but does type check).
+
+![Unifying big lambda](/images/typecheck-1-unify-lambda-2.png)
+
+Secondly `unknown-1 == Boolean` gives us a substitution.
+
+#### Apply the substitution
+
+![Substituting big lambda](/images/typecheck-1-substitute-lambda-2.png)
 
 
 ### No more words
