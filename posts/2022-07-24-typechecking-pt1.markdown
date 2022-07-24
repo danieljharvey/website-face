@@ -1,5 +1,5 @@
 ---
-title: Typechecking 
+title: Hindley Milner typechecking by example 
 tags: plt, mimsa, typechecker 
 ---
 
@@ -17,7 +17,7 @@ We're going to start by typechecking the simplest stuff, and then build up
 features as we go. There are three stages to our algorithm, `Elaboration`,
 `Unification` and `Substitution`. We'll introduce them as we need them.
 
-> __Elaboration__
+> __🥚 Elaboration 🥚__
 >
 > Here go through the expression we'd like to typecheck, marking each
 >   part of the AST with the thing we think it is (and if we don't know, we sort of guess). We'll also produce
@@ -43,7 +43,7 @@ environment. A let binding has two sub-expressions - the first is the one
 that gets "bound" and assigned to the name, and then the body, which can refer
 to the bound expression by name.
 
-![Elaborating let binding](/images/typecheck-1-elaborate-let.png)
+![Elaborating let binding for `let a = 1 in True`](/images/typecheck-1-elaborate-let.png)
 
 In this example, our environment (shown in green) is initially empty, but as we were able to
 elaborate the type of `a` as `Integer`, the environment when typechecking the
@@ -53,11 +53,12 @@ the whole expression, as the body of the let binding is `True` which we know is 
 ### Variable
 
 It's all well and good making variables, but it's even more useful to refer to
-them later.
+them later. Given a typechecking environment that already knows about `b`, we
+can look it up:
 
-![Elaborating variable](/images/typecheck-1-elaborate-var.png)
+![Elaborating variable `b`](/images/typecheck-1-elaborate-var.png)
 
-When using a variable, we look it up in the environment. If it's not there, we
+If it's not there, we
 throw a type error and tell the user they've made a typo or something. If it
 is, then we return the type from the environment.
 
@@ -68,7 +69,7 @@ something from both the `then` and the `else` branch. It contains three
 sub-expressions, one for the predicate we are testing (which must be of type
 `Boolean`), one for the `then` branch, and one for the `else` branch.
 
-![Elaborating if / then / else expressions](/images/typecheck-1-elaborate-if.png)
+![Elaborating `if True then 1 else 2`](/images/typecheck-1-elaborate-if.png)
 
 Because each of these sub-expressions are literal values, we can elaborate their
 values as we did above. The return type is `Integer`, as that is the type we
@@ -77,9 +78,9 @@ have worked out for the `then` branch (it could as well be the type of the
 
 How do we ensure all our rules work out? That's the job of the constraints that
 we have generated (shown in red). We have one that ensures the type of `True` matches
-`Boolean`, and another that ensures the types of `1` and `2` are the same.
+`Boolean`, and another that ensures the types of the `then` and `else` branches are the same. 
 
-> __Unification__ 
+> __🥚 Unification 🥚__ 
 >
 > Now that we have constraints, we need to check they make sense. Unification in the context of typechecking is about smashing two things
 > together and seeing what we learn. 
@@ -102,7 +103,7 @@ minimising type annotations, so instead we'll guess it. We do this by creating a
 so they often use numbers with an internal counter to generate fresh ones.
 We're going to use the unimaginative `unknown-1`.
 
-![Elaborating lambda](/images/typecheck-1-elaborate-lambda.png)
+![Elaborating lambda `\a -> a`](/images/typecheck-1-elaborate-lambda.png)
 
 Then, when we elaborate the body of the lambda, we add `a == unknown-1` to the
 environment, which makes typechecking the variable `a` straightforward, making
@@ -115,7 +116,7 @@ function from a to b")
 
 What's the use in functions if we can't apply values to them? Given the `id` function has already been defined, let's apply a value to it.
 
-![Elaborating function application](/images/typecheck-1-elaborate-application.png)
+![Elaborating function application for `id True`](/images/typecheck-1-elaborate-application.png)
 
 Since the function type is `unknown-1 -> unknown-1`, we apply `Boolean` to it,
 by creating a constraint between the first `unknown-1` and `Boolean`. Then the
@@ -141,7 +142,7 @@ We apply a substitution by changing all instances of one thing in a type for ano
 
 ![Substituting function application](/images/typecheck-1-substitute-application.png)
 
-> __Substitution__
+> __🥚 Substitution 🥚__
 >
 > Assuming we had no type errors in the previous step, then
 >  subsitution is the process of taking all the things we have learned and
@@ -159,10 +160,7 @@ To see Hindley Milner typechecking in action, here is a slightly bigger
 example. Here we'll see how we can get full type inference without a type
 annotation in sight.
 
-These diagrams are getting a bit out of hand now, so to be clear, our
-expression is `\a -> if a then 1 else 2`.
-
-![Elaborating a big lambda](/images/typecheck-1-elaborate-lambda-2.png)
+![Elaborating `\a -> if a then 1 else 2`](/images/typecheck-1-elaborate-lambda-2.png)
 
 We start by elaborating the function argument, `a`. We have no idea what it is,
 so we create a unification variable, `unknown-1`, and use that instead.
@@ -193,18 +191,22 @@ Secondly `unknown-1 == Boolean` gives us a substitution.
 
 ![Substituting big lambda](/images/typecheck-1-substitute-lambda-2.png)
 
+So, therefore, the type of `\a -> if a then 1 else 2` is `Boolean -> Integer`.
 
-### No more words
+### That's all folks 
 
-That is the end of the words. It's a bit of a braindump, and pretty much only
-for my own benefit, but I hope it is perhaps vaguely interesting. Who knows?
+The writing that is, that is the end of the writing. There is a bunch more to
+Hindley Milner typechecking, we've neatly sidestepped any complicated
+polymorphism, however rest assured that it doesn't make things _too_ much
+complicated which is nice. I might write about that in future, so given the
+glacial pace of my writing, look forward to a sequel in 2024.
 
 Make sense? If not, [get in touch](/contact.html)!
 
 Further reading:
 
-[quickcheck](https://hackage.haskell.org/package/QuickCheck)
+[giml](https://gilmi.me/blog/tags/giml)
 
-[fast-check](https://github.com/dubzzz/fast-check)
+[Write you a Haskell](https://smunix.github.io/dev.stephendiehl.com/fun/006_hindley_milner.html)
 
 [mimsa](https://github.com/danieljharvey/mimsa)

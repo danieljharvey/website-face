@@ -97,7 +97,7 @@ code {
 p code,
 li code {
   color: var(--magenta);
-  font-size: 110%;
+  font-size: 100%;
 }
 
 pre.sourceCode {
