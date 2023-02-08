@@ -104,7 +104,7 @@ pre.sourceCode {
   font-family: 'Fira Code', Menlo, Monaco, monospace;
   background-color: var(--code-bg);
   padding: 10px;
-  font-size: 120%;
+  font-size: 80%;
   border: 1px solid #d2d0b3;
 }
 
@@ -150,7 +150,7 @@ figcaption {
     line-height: 1.6;
   }
   pre.sourceCode {
-    font-size: 100%;
+    font-size: 80%;
   }
 }
 
@@ -182,7 +182,7 @@ figcaption {
     margin: 0 0.6rem;
   }
   pre.sourceCode {
-    font-size: 100%;
+    font-size: 80%;
   }
 }
 
