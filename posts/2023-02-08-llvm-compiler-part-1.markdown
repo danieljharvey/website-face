@@ -77,7 +77,7 @@ helpful error.
 
 The whole parser can be seen
 [here](https://github.com/danieljharvey/mimsa/tree/trunk/llvm-calc/src/Calc/Parser). We'll not go into too much depth as there are already lots of great references
-on parsing, but a few details are worth noting.
+on parsing, but a few details are worth noting:
 
 ### Which library?
 
