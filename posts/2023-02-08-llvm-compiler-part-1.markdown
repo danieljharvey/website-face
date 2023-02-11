@@ -1,5 +1,5 @@
 ---
-title: Compiling a language to LLVM, part 1 
+title: Compiling a functional language to LLVM, part 1 
 tags: plt, mimsa, typechecker, llvm 
 ---
 
@@ -15,7 +15,8 @@ such as pattern matching, lambdas and ADTs in much depth.
 So, here we're going to give it a go. The plan is that we start with an
 entirely working but tiny language, get it all working, and then as we add
 features to the language, we'll also add a typechecker and introduce more LLVM
-concepts.
+concepts. The source code for the whole working calculator, along with a basic repl, can be found
+at [llvm-calc](https://github.com/danieljharvey/mimsa/tree/trunk/llvm-calc).
 
 ## Our language
 
@@ -54,16 +55,16 @@ twoPlusTwo :: Expr ()
 twoPlusTwo = EInfix () OpAdd (EPrim () 2) (EPrim () 3)
 ```
 
-We call `Expr` an Abstract Syntax Tree (AST).
+We call datatypes like `Expr` _Abstract Syntax Trees_ (or ASTs).
 
 You may notice the `ann` type variable. We'll use this to "decorate" items in
 our AST. For now, we'll just use `()`.
 
-## Creating AST terms
+## Parsing text into AST terms
 
 Although we could provide our compiler as a Haskell library and ask our users
 to manually create `Expr` values for us, it'd be much nicer to be able to read
-input from a file.
+input from a user.
 
 This process is called _parsing_, and looks something like this:
 
@@ -74,7 +75,8 @@ parseInput :: Text -> Either ParseError (Expr ())
 Given some user input, parsing returns either a valid `Expr` or a (hopefully)
 helpful error.
 
-We'll not go into too much depth as there are already lots of great references
+The whole parser can be seen
+[here](https://github.com/danieljharvey/mimsa/tree/trunk/llvm-calc/src/Calc/Parser). We'll not go into too much depth as there are already lots of great references
 on parsing, but a few details are worth noting.
 
 ### Which library?
@@ -82,6 +84,8 @@ on parsing, but a few details are worth noting.
 We'll be using a library called
 [megaparsec](https://hackage.haskell.org/package/megaparsec). It's fast, it's got a [great
 tutorial](https://markkarpov.com/tutorial/megaparsec.html), and it generates errors that we can render nicely with the [diagnose](https://github.com/Mesabloo/diagnose) library. 
+
+![A megaparsec parse error made nice with diagnose](/images/llvm-1-parse-error.png "A megaparsec parse error made nice with diagnose")
 
 ### Dealing with whitespace 
 
@@ -106,8 +110,8 @@ called a `lexeme`. This is a sort of rule that says
 "when eating this value, also eat all the whitespace before it". When you see
 `myLexeme` in the code, this means we're wrapping a parser with
 whitespace-eating powers. This is
-covered in much better details in the
-[tutorial](https://markkarpov.com/tutorial/megaparsec.html#white-space).
+covered in much better detail in the
+[megaparsec tutorial](https://markkarpov.com/tutorial/megaparsec.html#white-space).
 
 ### Parsing infixes
 
@@ -151,23 +155,21 @@ parseResult :: Expr Annotation
 parseResult = EPrim (Location 1 3) 100
 ```
 
-We'll worry about breaking it up by line later.
-
-## Typechecking
-
-So now we've gotten a nicely parsed AST, it's typechecking time! However, our
-language has been carefully chosen to make constructing nonsense values
-impossble. Therefore, we'll leave it for today, but worry not, we'll soon need
-to address this!
+We won't be using these values today as our language is so limited that it's
+pretty difficult to break, but as we add multiple types (and thus, the
+possibility of type errors) we'll use them to show the user where they did a
+boo boo.
 
 ## A simple interpreter
 
 Before we get stuck into `LLVM`, it's good to be able to evaluate our language
-internally. Why bother? Although it's pretty clear how this calculator should work, it
+internally. Although it's pretty clear how this calculator should work, it
 will be useful to compare our own simple interpreter with the LLVM output as
 things get more complicated.
 
-Fortunately, this isn't much of hardship:
+You can view the full code
+[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc/src/Calc/Interpreter.hs).
+As you can see, there isn't very much of it:
 
 ```haskell
 interpret ::
@@ -196,15 +198,16 @@ interpretInfix ann OpMultiply (EPrim _ a) (EPrim _ b) =
   -- multiply the int values
   EPrim ann (a * b)
 interpretInfix ann op a b = 
-  -- simplify the leaves and try again
+  -- one of our arguments isn't yet a number
+  -- so simplify the leaves and try again
   interpretInfix ann op (interpret a) (interpret b)
 ```
-
-As you can see, `EPrim` values don't really do anything.
 
 When we see an `EInfix` value, we look for `EPrim` values inside and `add` / `subtract` / `multiply` them. If they're
 not `EPrim` values yet, then they must be nested expressions, so we `interpret` them
 and try again.
+
+![A big calculator](/images/llvm-1-giant-calculator.jpg "A big calculator")
 
 ## Enough nonsense, let's do some compiling 
 
@@ -213,10 +216,12 @@ the business of turning it into real life native code.
 
 ### What is LLVM
 
-It's a compiler backend, part of `clang`. It's very C shaped, and used by
-`Rust` and `Swift` amongst others. It's got a bunch
-of number types, structs, and arrays, functions, and enough pointers to have a
-very bad time. Fortunately for now we won't need too much. 
+LLVM stands for Low Level Virtual Machine. The idea is that higher level languages compile into LLVM, and then LLVM is turned into whatever local version of assembly is required. This means that by using LLVM, your programs will work on lots of architectures without you needing to understand a tremendous amount about them. As somebody who understands pretty much nothing about any processor architecture, this is very appealing indeed. If you need further persuading, `Rust`, `Swift` and `GHC` can all compile to
+LLVM.
+
+LLVM is part of the `clang` C compiler, and as a result, it's very C shaped.
+It's got a bunch of number types, structs, and arrays, functions, and enough pointers to have a
+very bad time.
 
 ### Our "runtime"
 
@@ -237,12 +242,9 @@ This is the only `C` you'll need to see today. I'm sorry about that. Onwards!
 
 ### Our first LLVM module 
 
-We'll be creating modules of `LLVM IR` (IR stands for Intermediate
-Representation). There is a through explanation of module structure in the [LLVM language
-reference](https://llvm.org/docs/LangRef.html#module-structure), however we
-will only need the basics for now. 
+LLVM is organised in [modules](https://llvm.org/docs/LangRef.html#module-structure).
 
-To start us off, here is the representation for printing the number `42` to `stdout`.
+To start us off, here is the IR (Intermediate Representation) for printing the number `42` to `stdout`.
 
 ```llvm
 ; ModuleID = 'calc'
@@ -321,27 +323,11 @@ end our functions. No great hardship though.
 
 ---
 
-> __💡 What is this `i32` business all about?💡__
->
-> Because we're compiling towards native code, we need to be exact about our
-> datatypes. You can see all LLVM's basic data types
-> in the [language
-> reference](https://llvm.org/docs/LangRef.html#single-value-types).
->
-> `i32` is a 32-bit integer
-> 
-> `i1` is a 1-bit integer (or a `boolean`, as it can only be `0` or `1`)
-
-
 ### Compiling and running our hand-baked module 
 
 To check that the code above does what we say it does, and to check we've got
 everything installed that we need, let's write the LLVM to a file called
 `module.ll`, the C code to `runtime.c`, and then compile it using `clang`.
-
-> __💡 Who is Clang?💡__
->
-> Clang is a C compiler than LLVM lives in. 
 
 ```bash
 clang -Wno-override-module -lm module.ll runtime.c -o a.out 
@@ -357,13 +343,11 @@ this:
 
 Hooray!
 
-## Compilng our actual programming language to LLVM 
+## Compiling our programming language to LLVM 
 
-OK. So now we've had a taste of the raw power available to us, let's make a
-computer write this for us.
-
-Fortunately, we do not need to hand output LLVM IR. We will use the following
-libraries to do it for us:
+OK. So now we've had a taste of the raw power available to us, let's get down
+to business. Although we could just create raw LLVM IR by hand, instead we will use the following
+libraries:
 
 [llvm-hs-pure](https://hackage.haskell.org/package/llvm-hs-pure) - a set of
 types for LLVM IR, along with some helpful building functions.
@@ -371,47 +355,30 @@ types for LLVM IR, along with some helpful building functions.
 [llvm-hs-pretty](https://hackage.haskell.org/package/llvm-hs-pretty) - a
 prettyprinter for `llvm-hs-pure`.
 
-We'll use this to write files and then compile by hand. This means that when we
+We'll use the datatypes in `llvm-hs-pure` to create modules, then use `llvm-hs-pretty` to render these to files and then compile by hand. This means that when we
 invariably generate LLVM errors, we'll at least we able to look at the error
 and reference the code we've given it to try and work out what went wrong.
 
 ### Shut up and show me some Haskell code
 
-This is the entire module for creating an LLVM module from our `Expr` type:
+The whole module can be seen
+[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc/src/Calc/Compile/ToLLVM.hs), but let's look at the highlights:
+
+---
 
 ```haskell
-{-# LANGUAGE OverloadedStrings #-}
+primToLLVM :: Int -> LLVM.Operand
+primToLLVM i = LLVM.int32 (fromIntegral i)
+```
 
-module Calc.Compile.ToLLVM (toLLVM) where
+This function creates integer literals from our `EPrim` constructors, using
+the [int32](https://hackage.haskell.org/package/llvm-hs-pure-9.0.0/docs/LLVM-IRBuilder-Constant.html#v:int32) function.
+This returns an `Operand` (an LLVM value, broadly) that we can pass to other LLVM functions. We'll
+expand this function to include more types as we need them.
 
-import Calc.Types
-import qualified LLVM.AST as LLVM hiding (function)
-import qualified LLVM.AST.Type as LLVM
-import qualified LLVM.IRBuilder.Constant as LLVM
-import qualified LLVM.IRBuilder.Instruction as LLVM
-import qualified LLVM.IRBuilder.Module as LLVM
-import qualified LLVM.IRBuilder.Monad as LLVM
+---
 
--- | given our `Expr` type, turn it into an LLVM module
-toLLVM :: Expr ann -> LLVM.Module
-toLLVM expr =
-  LLVM.buildModule "example" $ do
-    -- import `printint` from our standard library
-    -- it takes an `i32` and returns an `i32`
-    printInt <- LLVM.extern "printint" [LLVM.i32] LLVM.i32
-
-    -- create a function called `main` that will be the entry point to our
-    -- program
-    LLVM.function "main" [] LLVM.i32 $ \_ -> do
-      -- build the LLVM AST for our expression
-      ourExpression <- exprToLLVM expr
-
-      -- print our result to stdout
-      _ <- LLVM.call printInt [(ourExpression, [])]
-
-      -- return success exit code of `0`
-      LLVM.ret (LLVM.int32 0)
-
+```haskell
 exprToLLVM ::
   ( LLVM.MonadIRBuilder m,
     LLVM.MonadModuleBuilder m
@@ -432,19 +399,82 @@ exprToLLVM (EInfix _ OpMultiply a b) = do
   lhs <- exprToLLVM a
   rhs <- exprToLLVM b
   LLVM.mul lhs rhs
-
-primToLLVM :: Int -> LLVM.Operand
-primToLLVM i = LLVM.int32 (fromIntegral i)
 ```
 
-Let's go through this.
+Here we compile our `Expr` into and take care of adding /
+subtracting / multiplying integers.
 
-### summing up 
+Because we're using the `MonadIRBuilder`
+and `MonadModuleBuilder`, it's almost as if we're writing code to do the
+interpreting by hand, as all the actual code output is plumbed away in the
+monad. If you squint, it looks very similar to the interpreter we wrote earlier, so if you
+understand that, you pretty much understand this.
 
-write some stuff
+---
+
+```haskell
+-- | given our `Expr` type, turn it into an LLVM module
+toLLVM :: Expr ann -> LLVM.Module
+toLLVM expr =
+  LLVM.buildModule "example" $ do
+    -- import `printint` from our standard library
+    -- it takes an `i32` and returns an `i32`
+    printInt <- LLVM.extern "printint" [LLVM.i32] LLVM.i32
+
+    -- create a function called `main` that will be the entry point to our
+    -- program
+    LLVM.function "main" [] LLVM.i32 $ \_ -> do
+      -- build the LLVM AST for our expression
+      ourExpression <- exprToLLVM expr
+
+      -- print our result to stdout
+      _ <- LLVM.call printInt [(ourExpression, [])]
+
+      -- return success exit code of `0`
+      LLVM.ret (LLVM.int32 0)
+```
+
+Finally, we wrap up our compiled `Expr` and turn it into a
+module. We are going to import `printint` from our standard library, output the
+response of our computation to stdout, and then return exit code `0`. 
+
+Let's look at the generated LLVM for `6 * 8 - 3`:
+
+```llvm
+; ModuleID = 'example'
+
+declare external ccc i32 @printint(i32)
+
+define external ccc i32 @main() {
+  %1 = mul   i32 6, 8
+  %2 = sub   i32 %1, 3
+  %3 =  call ccc  i32  @printint(i32  %2)
+  ret i32 0
+}
+```
+
+Hopefully, nothing too surprising.
+
+## Running our code
+
+As with earlier, our little compiler works by pretty printing the LLVM module
+we created, then running `clang` to compile it into an executable. I pretty
+much stole the compiling code from
+[Micro-C](https://blog.josephmorag.com/posts/mcc3/) (thanks/sorry, Joseph!). 
+You can see our slightly tattered version
+[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc/src/Calc/Compile/RunLLVM.hs) if for some reason you don't believe any of this actually works.
+
+### Well that's that 
+
+Congratulations, you are all low-level compiler experts now. Hopefully that was
+somewhat helpful. Next time we'll be adding the equality operator and some basic control flow.
+Exciting!
 
 Make sense? If not, [get in touch](/contact.html)!
 
 Further reading:
 
+[llvm reference](https://llvm.org/docs/LangRef.html)
+
 [mimsa](https://github.com/danieljharvey/mimsa)
+
