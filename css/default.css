@@ -7,6 +7,7 @@
   --green: rgb(52, 154, 47);
   --magenta: rgb(184, 77, 159);
   --comments: #999;
+  --code-outline: #d2d0b3;
 }
 
 html {
@@ -100,12 +101,19 @@ li code {
   font-size: 100%;
 }
 
+hr {
+  border: none;
+  height: 1px;
+  color: var(--code-outline);
+  background-color: var(--code-outline);
+}
+
 pre.sourceCode {
   font-family: 'Fira Code', Menlo, Monaco, monospace;
   background-color: var(--code-bg);
   padding: 10px;
-  font-size: 120%;
-  border: 1px solid #d2d0b3;
+  font-size: 80%;
+  border: 1px solid var(--code-outline);
 }
 
 figure {
@@ -150,7 +158,7 @@ figcaption {
     line-height: 1.6;
   }
   pre.sourceCode {
-    font-size: 100%;
+    font-size: 80%;
   }
 }
 
@@ -182,7 +190,7 @@ figcaption {
     margin: 0 0.6rem;
   }
   pre.sourceCode {
-    font-size: 100%;
+    font-size: 80%;
   }
 }
 
