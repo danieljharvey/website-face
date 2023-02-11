@@ -1,9 +1,11 @@
 .PHONY: build
-build:
-	cabal update
+build: clean
 	cabal run site build
 
 .PHONY: watch
 watch:
-	cabal update
 	cabal run site watch
+
+.PHONY: clean
+clean:
+	cabal run site clean
