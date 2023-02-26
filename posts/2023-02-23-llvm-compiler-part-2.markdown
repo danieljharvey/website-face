@@ -161,10 +161,8 @@ can unambiguously work out the type just by looking at the value.
 ---
 
 ```haskell
-infer :: Expr ann -> Either (TypeError ann) (Expr (Type ann))
-infer (EPrim ann prim) =
-  pure (EPrim (typeFromPrim ann prim) prim)
-infer (EIf ann predExpr thenExpr elseExpr) = do
+inferIf :: ann -> Expr ann -> Expr ann -> Expr ann -> Either (TypeError ann) (Expr (Type ann))
+inferIf ann predExpr thenExpr elseExpr = do
   predA <- infer predExpr
   case getOuterAnnotation predA of
     (TPrim _ TBool) -> pure ()
@@ -172,7 +170,20 @@ infer (EIf ann predExpr thenExpr elseExpr) = do
   thenA <- infer thenExpr
   elseA <- check (getOuterAnnotation thenA) elseExpr
   pure (EIf (getOuterAnnotation elseA) predA thenA elseA)
-infer (EInfix ann OpEquals a b) = do
+```
+
+This is how `if` works. Great huh!
+
+---
+
+```haskell
+inferInfix ::
+  ann ->
+  Op ->
+  Expr ann ->
+  Expr ann ->
+  Either (TypeError ann) (Expr (Type ann))
+inferInfix ann OpEquals a b = do
   elabA <- infer a
   elabB <- infer b
   ty <- case (getOuterAnnotation elabA, getOuterAnnotation elabB) of
@@ -184,9 +195,17 @@ infer (EInfix ann OpEquals a b) = do
       -- otherwise, error!
       throwError (TypeMismatch otherA otherB)
   pure (EInfix ty OpEquals elabA elabB)
-infer (EInfix ann op a b) = do
+```
+
+That's how equals works, yo.
+
+---
+
+```haskell
+inferInfix ann op a b = do
   elabA <- infer a
   elabB <- infer b
+  -- all the other infix operators need to be Int -> Int -> Int
   ty <- case (getOuterAnnotation elabA, getOuterAnnotation elabB) of
     (TPrim _ TInt, TPrim _ TInt) ->
       -- if the types are the same, then great! it's an int!
@@ -221,7 +240,24 @@ infer (EInfix ann op a b) = do
   pure (EInfix ty op elabA elabB)
 ```
 
-Whoa.
+That's the other operators. They are complicated because we have nice errors.
+Look!
+
+----- put them here pls ----
+
+---
+
+```haskell
+infer :: Expr ann -> Either (TypeError ann) (Expr (Type ann))
+infer (EPrim ann prim) =
+  pure (EPrim (typeFromPrim ann prim) prim)
+infer (EIf ann predExpr thenExpr elseExpr) =
+  inferIf ann predExpr thenExpr elseExpr
+infer (EInfix ann op a b) =
+  inferInfix ann op a b
+```
+
+That's how we put `infer` together, easy!
 
 ---
 
@@ -232,8 +268,254 @@ check ty expr = do
   if void (getOuterAnnotation exprA) == void ty
     then pure (expr $> ty)
     else throwError (TypeMismatch ty (getOuterAnnotation exprA))
-
 ```
+
+Lastly, here's `check`. We only use it when comparing arms of `if` statements,
+but soon this will become more interesting.
+
+---
+
+## Interpreting our new friends
+
+Before heading back into LLVM land, let's update our manual interpreter so we
+can understand what's needed here.
+
+Firstly, it's now possible that our interpreter can fail. This will only happen
+if our typechecker is not working as expected, but we should make a proper
+error type for it anyway because we are good programmers who care about our
+users.
+
+```haskell
+data InterpreterError ann
+  = NonBooleanPredicate ann (Expr ann)
+  deriving stock (Eq, Ord, Show)
+```
+
+Interpreting infix expressions is a little bit more complicated, as our pattern
+matches have to make sure we're looking at the right `Prim` values. The
+eagle-eyed may notice that a broken typechecker could send this into a loop.
+Can you see where?
+
+```haskell
+interpretInfix ::
+  (MonadError (InterpreterError ann) m) =>
+  ann ->
+  Op ->
+  Expr ann ->
+  Expr ann ->
+  m (Expr ann)
+interpretInfix ann OpAdd (EPrim _ (PInt a)) (EPrim _ (PInt b)) =
+  pure $ EPrim ann (PInt $ a + b)
+interpretInfix ann OpSubtract (EPrim _ (PInt a)) (EPrim _ (PInt b)) =
+  pure $ EPrim ann (PInt $ a - b)
+interpretInfix ann OpMultiply (EPrim _ (PInt a)) (EPrim _ (PInt b)) =
+  pure $ EPrim ann (PInt $ a * b)
+interpretInfix ann OpEquals (EPrim _ a) (EPrim _ b) =
+  pure $ EPrim ann (PBool $ a == b)
+interpretInfix ann op a b = do
+  iA <- interpret a
+  iB <- interpret b
+  interpretInfix ann op iA iB
+```
+
+We ended up with a `MonadError` constraint above - why's that? It's because the
+main `interpret` function can now "explode" if we try and match a non-predicate
+in an if statement. Our typechecker _should_ stop this happening of course.
+
+```haskell
+-- | just keep reducing the thing until the smallest thing
+interpret ::
+  ( MonadError (InterpreterError ann) m
+  ) =>
+  Expr ann ->
+  m (Expr ann)
+interpret (EPrim ann p) = pure (EPrim ann p)
+interpret (EInfix ann op a b) =
+  interpretInfix ann op a b
+interpret (EIf ann predExpr thenExpr elseExpr) = do
+  predA <- interpret predExpr
+  case predA of
+    (EPrim _ (PBool True)) -> interpret thenExpr
+    (EPrim _ (PBool False)) -> interpret elseExpr
+    other -> throwError (NonBooleanPredicate ann other)
+```
+
+We interpret if statements by reducing the predicate down to a boolean, then
+taking a peek, and then interpreting the appropriate branch. If we don't need a
+branch, there's no need to interpret it!
+
+## OK, LLVM time
+
+I feel like I'm rushing through all this, and maybe copy pasta-ing an entire
+typechecker in the preamble was somewhat undisclined of me.
+
+BUT, here we go.
+
+### Digression
+
+Firstly, we'll add a new function to our C "standard library":
+
+```c
+void printbool(int b) {
+  printf(b ? "True" : "False");
+}
+```
+
+It will take an LLVM boolean, and print either `True` or `False` depending on
+whether it is `0` or not.
+
+### To the IR!
+
+We're going to start by looking at the LLVM IR for the following arbitrary
+expression:
+
+```bash
+if 2 == 1 then True else False 
+```
+
+```llvm
+; ModuleID = 'example'
+
+declare external ccc  void @printbool(i1)
+
+define external ccc  i32 @main()    {
+  %1 = icmp eq i32 2, 1
+  %2 = alloca i1
+  br i1 %1, label %then_0, label %else_0
+then_0:
+  store   i1 1, i1* %2
+  br label %done_0
+else_0:
+  store   i1 0, i1* %2
+  br label %done_0
+done_0:
+  %3 = load   i1, i1* %2
+   call ccc  void  @printbool(i1  %3)
+  ret i32 0
+}
+```
+
+What a ride! Let's take it line by line.
+
+---
+
+```llvm
+; ModuleID = 'example'
+```
+
+Once again, let's ease ourselves in with a code comment.
+
+---
+
+```llvm
+declare external ccc  void @printbool(i1)
+```
+
+Declaration for the new function in our standard library. It takes an `i1` (a
+boolean, stored as `0` or `1`) and returns `void`.
+
+---
+
+```llvm
+define external ccc  i32 @main()    {
+```
+
+We define the `main` function, which is the entry point of our program. It
+takes no arguments, and returns an `i32` integer value (which becomes the exit
+code).
+
+---
+
+```llvm
+%1 = icmp eq i32 2, 1
+```
+
+Here we are making a new variable, `%1`, by comparing two integers, `2` and
+`1`, using `eq`. This is our `2 == 1` expression, and maps across quite neatly.
+
+---
+
+```llvm
+%2 = alloca i1
+```
+
+To make control flow works, we are going to need to jump to different places.
+However, LLVM has no way of passing a value back between sections. Therefore,
+we are going to create a mutable placeholder for the result, and each branch
+will be responsible for storing the result here. `alloca` is broadly "allocate
+memory" and `i1` is the LLVM type for a `Boolean`.
+
+---
+
+```llvm
+br i1 %1, label %then_0, label %else_0
+```
+
+This is where we do the branching. `br` takes an `i1` value for the predicate,
+and then two labels for blocks that we'll jump to depending on the value of the predicate.
+Therefore if `%1` is `1` we'll jump to `then_0`, otherwise we'll jump to
+`else_0`. We'll define these shortly.
+
+---
+
+```llvm
+then_0:
+  store   i1 1, i1* %2
+  br label %done_0
+```
+
+This defines a block labelled `then_0`. We will "jump" here in the "then" case
+of the if statement. We store `1` in the `%2` variable, and then jump to the
+`done_0` block.
+
+---
+
+```llvm
+else_0:
+  store   i1 0, i1* %2
+  br label %done_0
+```
+
+This defines a block labelled `else_0`. We will "jump" here in the "else" case.
+Once again, we store `0` in the `%2` variable, and then jump to `done_0`.
+
+---
+
+```llvm
+done_0:
+  %3 = load   i1, i1* %2
+```
+
+This introduces a new block called `done_0`. As our if construct is an
+expression, we always need to return something, so ee jump here when the
+`then` or `expr` branches are finishing doing their business, and load whatever
+they stored in `%2`.
+
+---
+
+```llvm
+call ccc  void  @printbool(i1  %3)
+```
+
+Call the `printbool` function from our standard library with the loaded value.
+
+---
+
+```llvm
+ret i32 0
+```
+
+As our program succeeded, we return a `0`, this becomes our exit code.
+
+---
+
+```llvm
+}
+```
+
+As a little palette cleanser, a nice closing brace.
+
+---
 
 ### Well that's that 
 
