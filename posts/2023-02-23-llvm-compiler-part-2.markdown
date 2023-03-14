@@ -26,7 +26,7 @@ syntactic features:
 
 - an `==` infix operator
 
-Let's add those to our `Expr` type now:
+Let's do that now! 
 
 ```haskell
 -- | operators for combining expressions
@@ -35,12 +35,6 @@ data Op
   | OpMultiply
   | OpSubtract
   | OpEquals -- this is new! 
-  deriving stock (Eq, Ord, Show)
-
--- | types of basic values
-data Prim
-  = PInt Integer
-  | PBool Bool
   deriving stock (Eq, Ord, Show)
 
 -- | Expressions, decorated with some unknown `ann`
@@ -65,7 +59,18 @@ evaluate into an `Integer` (like `1 + 1`, `6 * 12`).
 However, the expression `1 == 1` doesn't resolve to an `Integer`, it can only
 be `True` or `False`, ie a `Boolean` type. (it is true that we could express
 this with an `Integer` but if we start cutting corners this early in the game
-we'll never get anywhere). This can only mean one thing: we are going to need
+we'll never get anywhere). This means we'll need to extend our `Prim` type to also describe `Boolean` values as
+well as `Integer`s.
+
+```haskell
+-- | types of basic values
+data Prim
+  = PInt Integer
+  | PBool Bool
+  deriving stock (Eq, Ord, Show)
+```
+
+However this means we are in danger of our users being able to make silly mistakes like `if 27 then False else 6`? How can we stop this? This can only mean one thing: we are going to need
 to write a bidirectional type checker.
 
 ### Bidirect what?
@@ -243,7 +248,26 @@ inferInfix ann op a b = do
 That's the other operators. They are complicated because we have nice errors.
 Look!
 
------ put them here pls ----
+![Nice!](/images/llvm-2-type-error-1.png "Nice!")
+
+![Great!](/images/llvm-2-type-error-2.png "Great!")
+
+![Tremendous!](/images/llvm-2-type-error-3.png "Tremendous!")
+
+![Whoa!](/images/llvm-2-type-error-4.png "Whoa!")
+
+![What?](/images/llvm-2-type-error-5.png "What?")
+
+![Absolutely!](/images/llvm-2-type-error-6.png "Absolutely!")
+
+![Surely not?](/images/llvm-2-type-error-7.png "Surely not?")
+
+![Ridiculous!](/images/llvm-2-type-error-8.png "Ridiculous!")
+
+![Huh?](/images/llvm-2-type-error-9.png "Huh?")
+
+You can see all the error rendering code
+[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Typecheck/Error.hs).
 
 ---
 
@@ -272,6 +296,9 @@ check ty expr = do
 
 Lastly, here's `check`. We only use it when comparing arms of `if` statements,
 but soon this will become more interesting.
+
+You can see all of the typechecker code
+[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Typecheck/Elaborate.hs).
 
 ---
 
@@ -343,6 +370,9 @@ interpret (EIf ann predExpr thenExpr elseExpr) = do
 We interpret if statements by reducing the predicate down to a boolean, then
 taking a peek, and then interpreting the appropriate branch. If we don't need a
 branch, there's no need to interpret it!
+
+You can see all of the interpreter code
+[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Interpreter.hs).
 
 ## OK, LLVM time
 
@@ -514,6 +544,92 @@ As our program succeeded, we return a `0`, this becomes our exit code.
 ```
 
 As a little palette cleanser, a nice closing brace.
+
+### Generating it from Haskell
+
+Now we have `Boolean` as well as `Integer` values, we'll need to represent them
+in LLVM. We'll use a `bit` which is a 1-bit LLVM number to represent
+`Boolean`s.
+
+```haskell
+primToLLVM :: Prim -> LLVM.Operand
+primToLLVM (PInt i) = LLVM.int32 (fromIntegral i)
+primToLLVM (PBool True) = LLVM.bit 1
+primToLLVM (PBool False) = LLVM.bit 0
+```
+
+Now we'll need to choose the right printing function:
+
+```haskell
+-- import the correct output function from our standard library
+-- depending on the output type of our expression
+printFunction :: (LLVM.MonadModuleBuilder m) => Type ann -> m LLVM.Operand
+printFunction (TPrim _ TInt) = LLVM.extern "printint" [LLVM.i32] LLVM.void
+printFunction (TPrim _ TBool) = LLVM.extern "printbool" [LLVM.i1] LLVM.void
+```
+
+The most interesting part is `if` expressions. We use the `RecursiveDo`
+extension, which gives us the `mdo` syntax. This lets us use bindings before
+they are created. This will allow us to use `thenBlock` and `elseBlock` before
+they're defined. We create IR for the `predExpr`, then pass it to
+`LLVM.condBr`, which will then jump to the appropriate block depending on the
+value.
+
+```haskell
+ifToLLVM ::
+  (LLVM.MonadIRBuilder m, LLVM.MonadModuleBuilder m, MonadFix m) =>
+  Type ann ->
+  Expr (Type ann) ->
+  Expr (Type ann) ->
+  Expr (Type ann) ->
+  m LLVM.Operand
+ifToLLVM tyReturn predExpr thenExpr elseExpr = mdo
+  -- create IR for predicate
+  irPred <- exprToLLVM predExpr
+
+  -- make variable for return value
+  irReturnValue <- LLVM.alloca (typeToLLVM tyReturn) Nothing 0
+
+  -- this does the switching
+  -- we haven't created these blocks yet but RecursiveDo lets us do this with
+  -- MonadFix magic
+  LLVM.condBr irPred thenBlock elseBlock
+
+  -- create a block for the 'then` branch
+  thenBlock <- LLVM.block `LLVM.named` "then"
+  -- create ir for the then branch
+  irThen <- exprToLLVM thenExpr
+  -- store the result in irResultValue
+  LLVM.store irReturnValue 0 irThen
+  -- branch back to the 'done' block
+  LLVM.br doneBlock
+
+  -- create a block for the 'else' branch
+  elseBlock <- LLVM.block `LLVM.named` "else"
+  -- create ir for the else branch
+  irElse <- exprToLLVM elseExpr
+  -- store the result in irReturnValue
+  LLVM.store irReturnValue 0 irElse
+  -- branch back to the `done` block
+  LLVM.br doneBlock
+
+  -- create a block for 'done' that we always branch to
+  doneBlock <- LLVM.block `LLVM.named` "done"
+  -- load the result and return it
+  LLVM.load irReturnValue 0
+```
+
+To work out which kind of type to `alloca`, we take the return type and use it
+to work which LLVM type to use.
+
+```haskell
+typeToLLVM :: Type ann -> LLVM.Type
+typeToLLVM (TPrim _ TBool) = LLVM.i1
+typeToLLVM (TPrim _ TInt) = LLVM.i32
+```
+
+You can see all of the LLVM conversion code
+[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Compile/ToLLVM.hs).
 
 ---
 
