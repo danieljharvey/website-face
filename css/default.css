@@ -84,7 +84,7 @@ article .header {
 p,
 li {
   font-weight: 100;
-  font-size: 90%;
+  font-size: 100%;
 }
 
 ol li {
@@ -99,6 +99,8 @@ p code,
 li code {
   color: var(--magenta);
   font-size: 100%;
+  background-color: var(--code-bg);
+  padding: 0 5px;
 }
 
 hr {
