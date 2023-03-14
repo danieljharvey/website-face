@@ -148,7 +148,7 @@ elaborate = infer -- start with `infer` because we know nothing
 ```
 
 `elaborate` is the function the typechecker exports. It takes an untypechecked
-``Expr ann` and returns either `Expr (Type ann)` or an excuse. It starts by
+`Expr ann` and returns either `Expr (Type ann)` or an excuse. It starts by
 running `infer`, which we'll see shortly. 
 
 ---
@@ -177,7 +177,9 @@ inferIf ann predExpr thenExpr elseExpr = do
   pure (EIf (getOuterAnnotation elseA) predA thenA elseA)
 ```
 
-This is how `if` works. Great huh!
+This is how `if` works. We `infer` the type of the predicate, then use
+`getOuterAnnotation` to get the `Type ann` out of it. We then case match on it
+to see if it's a `Boolean` or not, "throwing" an error if not.
 
 ---
 
@@ -202,7 +204,8 @@ inferInfix ann OpEquals a b = do
   pure (EInfix ty OpEquals elabA elabB)
 ```
 
-That's how equals works, yo.
+When typechecking `==`, we want to make sure both sides have the same type,
+"throwing" an error if not.
 
 ---
 
@@ -245,8 +248,10 @@ inferInfix ann op a b = do
   pure (EInfix ty op elabA elabB)
 ```
 
-That's the other operators. They are complicated because we have nice errors.
-Look!
+Here are the other operators. Both the arguments should be `Integer` and the
+return type is `Integer`, otherwise we construct and return an error type. It
+seems like a lot of work to be so specific, but look how helpful our errors
+are!
 
 ![Nice!](/images/llvm-2-type-error-1.png "Nice!")
 
