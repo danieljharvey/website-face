@@ -41,6 +41,7 @@
 
         devShell = pkgs.mkShell {
           buildInputs = with haskellPackages; [
+            ghc
             cabal-install
             pkgs.zlib
             pkgs.darwin.apple_sdk.frameworks.CoreServices
