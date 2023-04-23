@@ -8,8 +8,7 @@ Welcome to part 3 of this series in compiling functional languages to LLVM. In
 flow to our langauge with an `if / then / else` construct.
 
 Today we're going to get one important step towards a functional programming
-language by adding functions and variables. Unfortunately these won't be lambdas (yet), but
-they are one important step towards them: 
+language by adding functions and variables. 
 
 By the end of today we'll be able to make small modules such as:
 
@@ -25,81 +24,21 @@ function increment(a: integer) {
 add(increment(1), add(2, 3))
 ```
 
-## No lambdas, what gives?
-
-LLVM is part of the `Clang` C compiler, so the IR is pretty C shaped, all told. All [functions](https://llvm.org/docs/LangRef.html#functions) in LLVM must be defined at the top level with static types. This means that we could model an expression like:
-
-```haskell
-let my_func = \(a: Integer) -> a + 1;
-
-my_func(41)
-```
-
-quite easily, as it turns into something like:
-
-```typescript
-function my_func(a: Integer) {
-  return a + 1
-}
-
-function main() {
-  my_func(41) 
-}
-```
-
-However, if our lambda function uses a variable defined outside the function,
-like `a` is here:
-
-```haskell
-let a = 100;
-
-let my_func = \\b -> a + b;
-
-my_func(41)
-```
-
-...we'd struggle a bit more: 
-
-```typescript
-function my_func(b: Integer) {
-  // where do we get `a` from?
-  return a + b
-}
-
-function main() {
-  let a = 100;
-  my_func(41) 
-}
-```
-
-The problem is that the `my_func` lambda has "captured" the `a` value from it's
-scope. Therefore, when calling it, we need to pass it this captured value as
-well as the lambda argument `b`.
-
-In pseudo code, it looks like this:
-
-```typescript
-function my_func(b: Integer, environment: {a: Integer}) {
-  // `a` comes from the 'captured environment'
-  return environment.a + b
-}
-
-function main() {
-  let a = 100;
-
-  // capture the environment that will be used by `my_func`
-  let env = {a:100}
-
-  // get a pointer to `my_func` so we can pass it around as a first class value
-  let pointer_to_my_func = my_func
-
-  // call the function using the pointer, passing any args plus the environment
-  pointer_to_my_func(41, env)
-}
-```
-
-Today we're going to implement basic functions, and we'll move onto closures in
-the next chapter.
+However, there are quite a few things our functions _won't_ do.
+ 
++ They can't call themselves recursively (ie, `function factorial(a: Integer) { if a == 0 then 1 else a * factorial(a - 1) }`. This is to simplify the typechecker
+  implementation for the time being rather than any limitation in LLVM - we'll come back round to making this
+  possible.
++ We must define all function arguments up front (ie, `a: Integer, b:
+  Boolean`). It is possible to infer these, but let's keep things simple for
+  now.
++ Functions can only call functions defined before them. This can be solved by
+  doing some dependency analysis before typechecking (ie, move things around to
+  typecheck them in a sensible order). We avoid this for now, but will come
+  back to it.
++ Functions can't return other functions, they can only be defined at the top
+  level. This is a limitation of LLVM, however in future chapters we'll work around this by
+  implementing closures.
 
 ## OK, lets get concrete
 
@@ -135,8 +74,9 @@ The `ann` type will contain file location information
 after parsing, and then will contain the type of the function after
 typechecking.
 
-As mentioned above, our function implementation is very limited - we can only
-use variables passed into the function as arguments.
+Our function implementation is very limited - we can only
+use variables passed into the function as arguments, and must explicitly
+annotate each function argument with it's type.
 
 ### Module
 
@@ -164,7 +104,7 @@ function decrement(a: Integer) {
 increment(decrement(1)) == 1
 ```
 
-Our implementation is quite limited. Functions can only be used in the order
+As mentioned earlier, functions can only be used in the order
 they are defined. Therefore `decrement` could call `increment`, but not the
 other way round. We can improve this in future with some basic dependency
 analysis. 
@@ -226,6 +166,26 @@ them. Variables only live for the life of a function that are defined in, so
 they live in the `TypecheckEnv` used by `Reader`, and disappear after the
 function definition is typechecked ([more information on this technique
 here](https://blog.cofree.coffee/2021-08-13-that-one-cool-reader-trick/)).
+
+The trick is using the `local` function from `Control.Monad.Reader`:
+
+```haskell
+withFunctionArgs :: [(Identifier, Type ann)] -> TypecheckM ann a -> TypecheckM ann a
+withFunctionArgs args computation =
+  local
+    ( \tce ->
+        tce
+          { tceVars = tceVars tce <> HM.fromList args
+          }
+    )
+    computation
+```
+
+We pass in some `args`, which are the function arguments and their types, and
+`computation`, which is whatever typechecking we'd like do. Then throughout
+running `computation`, we'll have extra variables in scope, and then they'll
+disappear again. This is helpful for typechecking functions, where the vars
+only exist inside.
 
 We use `TypecheckState` and `State` for the functions we create as we want them
 to accumulate and stay in scope for the rest of typechecking as we use them.
@@ -354,11 +314,28 @@ argument with type `i32`, and `%b_0` is the second argument, with type `i32`.
 
 This is the function body. We add `%a_0` and `%b_0`, and then return it.
 
+```llvm
 define external ccc  i32 @main()    {
-  %1 =  call ccc  i32  @sum(i32  20, i32  22)
-  call ccc  void  @printint(i32  %1)
-  ret i32 0
+```
+
+This defines the `main` function, the entry point to our application.
+
+
+```llvm
+%1 =  call ccc  i32  @sum(i32  20, i32  22)
+```
+
+```llvm
+call ccc  void  @printint(i32  %1)
+```
+  
+```llvm
+ret i32 0
+```
+
+```llvm
 }
+```
 ```
 
 
