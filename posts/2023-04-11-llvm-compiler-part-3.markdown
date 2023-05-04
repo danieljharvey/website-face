@@ -4,7 +4,7 @@ tags: plt, mimsa, typechecker, llvm
 ---
 
 Welcome to part 3 of this series in compiling functional languages to LLVM. In
-[part 1](/posts/2023-02-23-llvm-compiler-part-2.html) we added basic control
+[part 2](/posts/2023-02-23-llvm-compiler-part-2.html) we added basic control
 flow to our langauge with an `if / then / else` construct.
 
 Today we're going to get one important step towards a functional programming
