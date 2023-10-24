@@ -263,7 +263,7 @@ lookupFunction ann fnName = do
 
 These types, and the functions used to store / fetch variables and functions
 are defined
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc3/src/Calc/Typecheck/Types.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc3/src/Calc/Typecheck/Types.hs).
 
 ### Elaborating a function
 
@@ -336,7 +336,7 @@ We won't go into the interpreter changes today, they work in the same way as
 the typechecker,
 storing variables in the `Reader` env and functions in the `State`. [The code
 lives
-here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc3/src/Calc/Interpreter.hs). 
+here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc3/src/Calc/Interpreter.hs). 
 
 ## To the IR!
 
@@ -488,7 +488,7 @@ it's nice to capture them properly rather than just throwing with `error`.
 
 It means we also need a similar set of functions for adding and looking up
 functions and variables, which can be found
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc3/src/Calc/Compile/ToLLVM.hs#L38) and are hopefully unsurprising.
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc3/src/Calc/Compile/ToLLVM.hs#L38) and are hopefully unsurprising.
 
 A lot of our implementation are various "turn things into LLVM" functions:
 
@@ -608,7 +608,7 @@ moduleToLLVM (Module {mdExpr = expr, mdFunctions}) =
 ```
 
 You can see all of the LLVM generation code
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc3/src/Calc/Compile/ToLLVM.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc3/src/Calc/Compile/ToLLVM.hs).
 
 ---
 
@@ -623,5 +623,5 @@ Further reading:
 
 [llvm reference](https://llvm.org/docs/LangRef.html)
 
-[mimsa](https://github.com/danieljharvey/mimsa)
+[llvm-calc](https://github.com/danieljharvey/llvm-calc)
 

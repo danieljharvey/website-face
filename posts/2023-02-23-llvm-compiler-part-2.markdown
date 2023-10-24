@@ -136,7 +136,7 @@ oneWhichIsAnInteger = EPrim (TPrim () TInt) (PInt 1)
 ```
 
 The entire typechecker lives
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Typecheck/Elaborate.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc2/src/Calc/Typecheck/Elaborate.hs).
 Let's go through the key parts:
 
 ---
@@ -272,7 +272,7 @@ are!
 ![Huh?](/images/llvm-2-type-error-9.png "Huh?")
 
 You can see all the error rendering code
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Typecheck/Error.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc2/src/Calc/Typecheck/Error.hs).
 
 ---
 
@@ -303,7 +303,7 @@ Lastly, here's `check`. We only use it when comparing arms of `if` statements,
 but soon this will become more interesting.
 
 You can see all of the typechecker code
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Typecheck/Elaborate.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc2/src/Calc/Typecheck/Elaborate.hs).
 
 ---
 
@@ -377,7 +377,7 @@ taking a peek, and then interpreting the appropriate branch. If we don't need a
 branch, there's no need to interpret it!
 
 You can see all of the interpreter code
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Interpreter.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc2/src/Calc/Interpreter.hs).
 
 ## OK, LLVM time
 
@@ -634,7 +634,7 @@ typeToLLVM (TPrim _ TInt) = LLVM.i32
 ```
 
 You can see all of the LLVM conversion code
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc2/src/Calc/Compile/ToLLVM.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc2/src/Calc/Compile/ToLLVM.hs).
 
 ---
 
@@ -650,5 +650,5 @@ Further reading:
 
 [llvm reference](https://llvm.org/docs/LangRef.html)
 
-[mimsa](https://github.com/danieljharvey/mimsa)
+[llvm-calc](https://github.com/danieljharvey/llvm-calc)
 

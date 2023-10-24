@@ -16,7 +16,7 @@ So, here we're going to give it a go. The plan is that we start with an
 entirely working but tiny language, get it all working, and then as we add
 features to the language, we'll also add a typechecker and introduce more LLVM
 concepts. The source code for the whole working calculator, along with a basic repl, can be found
-at [llvm-calc](https://github.com/danieljharvey/mimsa/tree/trunk/llvm-calc).
+at [llvm-calc](https://github.com/danieljharvey/llvm-calc/tree/trunk/llvm-calc).
 
 ## Our language
 
@@ -76,7 +76,7 @@ Given some user input, parsing returns either a valid `Expr` or a (hopefully)
 helpful error.
 
 The whole parser can be seen
-[here](https://github.com/danieljharvey/mimsa/tree/trunk/llvm-calc/src/Calc/Parser). We'll not go into too much depth as there are already lots of great references
+[here](https://github.com/danieljharvey/llvm-calc/tree/trunk/llvm-calc/src/Calc/Parser). We'll not go into too much depth as there are already lots of great references
 on parsing, but a few details are worth noting:
 
 ### Which library?
@@ -168,7 +168,7 @@ will be useful to compare our own simple interpreter with the LLVM output as
 things get more complicated.
 
 You can view the full code
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc/src/Calc/Interpreter.hs).
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc/src/Calc/Interpreter.hs).
 As you can see, there isn't very much of it:
 
 ```haskell
@@ -362,7 +362,7 @@ and reference the code we've given it to try and work out what went wrong.
 ### Shut up and show me some Haskell code
 
 The whole module can be seen
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc/src/Calc/Compile/ToLLVM.hs), but let's look at the highlights:
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc/src/Calc/Compile/ToLLVM.hs), but let's look at the highlights:
 
 ---
 
@@ -462,7 +462,7 @@ we created, then running `clang` to compile it into an executable. I pretty
 much stole the compiling code from
 [Micro-C](https://blog.josephmorag.com/posts/mcc3/) (thanks/sorry, Joseph!). 
 You can see our slightly tattered version
-[here](https://github.com/danieljharvey/mimsa/blob/trunk/llvm-calc/src/Calc/Compile/RunLLVM.hs) if for some reason you don't believe any of this actually works.
+[here](https://github.com/danieljharvey/llvm-calc/blob/trunk/llvm-calc/src/Calc/Compile/RunLLVM.hs) if for some reason you don't believe any of this actually works.
 
 ### Well that's that 
 
@@ -476,5 +476,5 @@ Further reading:
 
 [llvm reference](https://llvm.org/docs/LangRef.html)
 
-[mimsa](https://github.com/danieljharvey/mimsa)
+[llvm-calc](https://github.com/danieljharvey/llvm-calc)
 
