@@ -9,7 +9,7 @@ LLVM, and I have to confess, I came [utterly unstuck](https://github.com/danielj
 
 ![Failure](/images/failure.webp "Failure") 
 
-Until recent versions, it tried to be helpful by making you specify types
+Until recent versions, LLVM tried to be helpful by making you specify types
 for all pointers you pass around. This is really helpful in simple cases as you
 get basic typechecking at compile time. However, once you start implementing things like sum types (ie, reserve a slab of memory, and stuff it with one of several sets of data), it becomes super annoying.
 
