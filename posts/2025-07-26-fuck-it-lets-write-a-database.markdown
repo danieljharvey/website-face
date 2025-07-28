@@ -144,9 +144,9 @@ It is not good code, but it is code. We'd test it, but it would still fail becau
 
 ## Query::Filter
 
-Call me a staunch traditionalist, but often when I am accessing a database I do not wish to download all of it's data at once.
+Call me a staunch traditionalist, but often when I am accessing a database I do not wish to download all of it's data at once. We're going to allow users to filter data using a `where` clause, which lets us define properties about rows we are interested in.
 
-Let's recap on our types. This is the `Expr` type that represents a (very limited) `where` clause.
+Let's recap on our `Expr` type:
 
 ```rust
 pub enum Expr {
@@ -161,9 +161,10 @@ pub enum Op {
     Equals,
 }
 ```
-This would let us express `select * from Album where album_id = 1`.
 
-We start with a function that given a `serde_json::Value` with a row in it, and an `Expr`, returns a `bool` telling us if the row matches. This is called a `boolean expression`, fact fans.
+This is pretty limited, but it does let us express `select * from Album where album_id = 1`.
+
+We start by defining a function for deciding whether we care about a row. It takes a row (which we store as a `serde_json::Value`) and an `Expr`, returning a `bool` telling us to keep the row or throw it in the bin.
 
 ```rust
 fn apply_predicate(row: &serde_json::Value, where_expr: &Expr) -> bool {
@@ -204,9 +205,9 @@ We'd test a query, but it'd still fail. But nearly!
 
 ## Query::Project
 
-So far we return every single field from our table scan, so every `select` is a `select * from ...`. We can do better than that, let's implement `Project`, which is how we extract fields from rows. Eventually, we'll do stuff for aliases, but now we're just supporting `select Title, ArtistId from Album`.
+So far we return every single field from our table scan, so every `select` is a `select * from ...`. We can do better than that, let's implement `Project`, which is how we extract fields from rows. Eventually, we'll allowing renaming things with aliases, but that's quite boring and fiddly, so for now we're just supporting stuff like `select Title, ArtistId from Album`.
 
-We've got two styles of projection.
+We've got two styles of projection:
 
 ```rust 
 enum ProjectFields {
