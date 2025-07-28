@@ -1,26 +1,24 @@
 ---
-title: fuck it, let's write a database 
-tags: database, fuck it, 
+title: Let's write a database (part 1) 
+tags: database, filter, from, project 
 ---
 
-# Fuck it, let's write a database
-
-So, confession, I love playing on the computer, but I'm fucking terrible at SQL. I know that it's Good or whatever and there's this whole very sensible looking [Relational Algebra](https://en.wikipedia.org/wiki/Relational_algebra) behind it all, but like when I have to interact with it, I get the job done and then immediately wipe whatever I learned from my brain.
+So, confession, I love playing on the computer, but I'm terrible at SQL. I know that it's Good or whatever and there's this whole very sensible looking [Relational Algebra](https://en.wikipedia.org/wiki/Relational_algebra) behind it all, but like when I have to interact with it, I get the job done and then immediately wipe whatever I learned from my brain.
 
 Enough is enough. It's time to learn it properly. And what better way than to write an ANSI SQL database from scratch!
 
 ## Disclaimers etc 
 
-Setting some expectations, this is very much a "fun" learning project, and we're gonna fuck a lot of things up. We'll be using Rust, because I write that a lot atm and so it's what my brain thinks in, but I would definitely read this as a Rust tutorial because I am almost as bad at Rust as SQL. I am going to describe things in a very hand-wavy way that will probably annoy people that know what they're talking about, but fuck it, it's my blog and I can do what I want.
+Setting some expectations, this is very much a "fun" learning project, and we're gonna get a lot of things wrong. We'll be using Rust, because I write that a lot atm and so it's what my brain thinks in, but I would definitely not read this hoping for a Rust tutorial because I am almost as bad at Rust as SQL. I am going to describe things in a very hand-wavy way that will probably annoy people that know what they're talking about, but it's my blog and I can do what I want.
 
-## So, let's fucking do it?
+## So, let's do it?
 
 OK. So what we're going to do in part 1 is:
 
 - Make (steal) a SQL parser
-- Do a table scan
-- Filter results from that table
-- Choose the fields we want to look at
+- Do a table scan (`From`)
+- Filter results from that table (`Filter`)
+- Choose the fields we want to look at (`Project`)
 
 Because we're only starting with reads, our tables are going to be static JSON files taken from the [chinook dataset](https://github.com/marko-knoebl/chinook-database-json). We are using this because it's full of rock albums and it's nice to be reminder that Led Zeppelin are a totally sick band from time to time.
 
@@ -175,10 +173,13 @@ fn apply_predicate(row: &serde_json::Value, where_expr: &Expr) -> bool {
             op,
             literal,
         } => {
+            // unwrap row into a map
             let row_object = row.as_object().unwrap();
 
+            // grab the column we care about 
             let value = row_object.get(&column.name).unwrap();
 
+            // compare it to `value` 
             match op {
                 Op::Equals => value == literal,
             }
@@ -219,15 +220,25 @@ First we'll make a function that works on a single row:
 
 ```rust 
 fn project_fields(row: serde_json::Value, fields: &[Column]) -> serde_json::Value {
-    let field_set: BTreeSet<_> = fields.iter().map(|c| c.name.clone()).collect();
+    // make set of columns to keep
+    let field_set: BTreeSet<_> = 
+      fields
+        .iter()
+        .map(|c| c.name.clone())
+        .collect();
+
+    
     if let serde_json::Value::Object(map) = row {
+        // collect all the items we still want
         let new_map = map
             .into_iter()
             .filter(|(k, _)| field_set.contains(k))
             .collect();
+
+        // wrap it back up again
         serde_json::Value::Object(new_map)
     } else {
-        row
+        panic!("expected Object")
     }
 }
 ```
@@ -246,7 +257,9 @@ pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
       let inner = run_query(from);
 
       match fields {
+        // just return everything
         ProjectFields::Star => inner,
+        // filter the columns in each row
         ProjectFields::Fields(fields) => inner
           .into_iter()
           .map(|row| project_fields(row, fields))
@@ -260,18 +273,7 @@ pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
 
 ## Bringing it together
 
-We then add a basic CLI using [clap](https://docs.rs/clap/latest/clap/), that takes a single argument `--sql`. This means we can run a query with `cargo run --bin cli -- --sql 'select Title from Album where AlbumId = 48' | jq `.
-
-```bash 
-{
-  "AlbumId": 48,
-  "Title": "The Essential Miles Davis (Disc 1)",
-  "ArtistId": 68
-}
-```
-
-Not bad, not bad at all.
-
+We then add a basic CLI using [clap](https://docs.rs/clap/latest/clap/), that takes a single argument `--sql`. Nothing surprising or interesting here, sorry.
 
 ```rust
 use clap::Parser;
@@ -297,14 +299,21 @@ fn main() {
 }
 ```
 
-Error handling? Schmerror schmandling.
+This means we can run a query with `cargo run --bin cli -- --sql 'select Title from Album where AlbumId = 48' | jq ` and look what we get:
 
+```bash 
+{
+  "AlbumId": 48,
+  "Title": "The Essential Miles Davis (Disc 1)",
+  "ArtistId": 68
+}
+```
+
+Not bad, not bad at all.
 
 ## What's next?
 
-In part two we're going to add some JOINS. 
+If you've made it this far without being furious about my use of `unwrap()`, then in part two we're going to add some JOINS. 
 
 Make sense? If not, [get in touch](/contact.html)!
-
-Further reading:
 
