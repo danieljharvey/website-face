@@ -20,8 +20,285 @@ OK. So what we're going to do in part 1 is:
 - Make (steal) a SQL parser
 - Do a table scan
 - Filter results from that table
+- Choose the fields we want to look at
 
 Because we're only starting with reads, our tables are going to be static JSON files taken from the [chinook dataset](https://github.com/marko-knoebl/chinook-database-json). We are using this because it's full of rock albums and it's nice to be reminder that Led Zeppelin are a totally sick band from time to time.
+
+## Our types
+
+We might not be implementing in Haskell but it's spirit lives on - let's start by defining the types of our query.
+
+```rust
+// the type that defines a query
+enum Query {
+  From(From),
+  Filter(Filter),
+  Project(Project)
+}
+
+// select `FROM` a table
+struct From {
+  table_name: TableName
+}
+
+// filter the results for a `WHERE` clause
+struct Filter {
+  from: Box<Query>,
+  filter: Expr,
+}
+
+// boolean expression type
+pub enum Expr {
+    ColumnComparison {
+        column: Column,
+        op: Op,
+        literal: serde_json::Value,
+    },
+}
+
+// compare two items  
+pub enum Op {
+    Equals,
+}
+
+// choose which fields to return 
+struct Project {
+  from: Box<Query>,
+  fields: ProjectFields 
+}
+
+// which fields to return
+enum ProjectFields {
+  Star,
+  Fields(Vec<ColumnName>)
+}
+
+// name of a table
+struct TableName(pub String);
+
+// name of a column
+struct ColumnName(pub String);
+```
+
+## A parser
+
+This could quickly become a parsing tutorial and we don't want that, so we're going to use the [sqlparser](https://docs.rs/sqlparser/latest/sqlparser) crate. It takes a string input and returns either it's own AST or an error. We'll pattern match on this and extract only the things we support into a `Query` type we defined above.
+
+Nothing about this is very interesting, so I will just [link to it](https://github.com/danieljharvey/lets-build-a-database/blob/main/crates/core/src/parser.rs#L51). Know that we parse some SQL and make the types above.
+
+
+
+## Our `run_query` function  
+
+Now we've worked out what the user wants, we need to run the query. Initially we'll do this by matching on the `Query` type. 
+
+```rust
+pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
+    match query {
+        Query::From(_) => todo!("Query::From"), 
+        Query::Filter(_) => todo!("Query::Filter"), 
+        Query::Project(_) => todo!("Query::Project")
+    }
+}
+```
+We'll fill these `todo!` out one by one now.
+
+## Query::From
+
+The first thing we'll implement is a simple table scan. A table scan is "get all of the rows in the table". If you're thinking "that doesn't sound wildly performant", rest assured your Software Craftsperson spidey-sense is still working correctly. However, our tables only have ~300 items in them, so for now we'll live with it until we start thinking about indexes.
+
+Here is some code. Forgive me, Padre.
+
+```rust
+fn table_scan(table_name: &TableName) -> Vec<serde_json::Value> {
+    match table_name.0.as_str() {
+        "Album" => {
+            let my_str = include_str!("../static/Album.json");
+            serde_json::from_str::<serde_json::Value>(my_str)
+              .unwrap()
+              .as_array()
+              .unwrap()
+              .clone()
+        },
+        "Artist" => {
+            let my_str = include_str!("../static/Artist.json");
+            serde_json::from_str::<serde_json::Value>(my_str)
+              .unwrap()
+              .as_array()
+              .unwrap()
+              .clone()
+        }
+        _ => panic!("table not found {table_name:?}"),
+    }
+}
+```
+
+Let's smash that into our `run_query` function:
+
+```rust
+pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
+    match query {
+        Query::From(From { table_name }) => table_scan(table_name), 
+        ..  
+```
+
+It is not good code, but it is code. We'd test it, but it would still fail because of the other `todo!`. Oh well. Onwards.
+
+## Query::Filter
+
+Call me a staunch traditionalist, but often when I am accessing a database I do not wish to download all of it's data at once.
+
+Let's recap on our types. This is the `Expr` type that represents a (very limited) `where` clause.
+
+```rust
+pub enum Expr {
+    ColumnComparison {
+        column: Column,
+        op: Op,
+        literal: serde_json::Value,
+    },
+}
+
+pub enum Op {
+    Equals,
+}
+```
+This would let us express `select * from Album where album_id = 1`.
+
+We start with a function that given a `serde_json::Value` with a row in it, and an `Expr`, returns a `bool` telling us if the row matches. This is called a `boolean expression`, fact fans.
+
+```rust
+fn apply_predicate(row: &serde_json::Value, where_expr: &Expr) -> bool {
+    match where_expr {
+        Expr::ColumnComparison {
+            column,
+            op,
+            literal,
+        } => {
+            let row_object = row.as_object().unwrap();
+
+            let value = row_object.get(&column.name).unwrap();
+
+            match op {
+                Op::Equals => value == literal,
+            }
+        }
+    }
+}
+```
+
+Let's use it in our `run_query` function:
+
+```rust
+pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
+    match query {
+        Query::From(From { table_name }) => table_scan(table_name),
+        Query::Filter(Filter { from, filter }) => run_query(from)
+            .into_iter()
+            .filter(|row| apply_predicate(row, filter))
+            .collect(), 
+        ..
+```
+We'd test a query, but it'd still fail. But nearly!
+
+## Query::Project
+
+So far we return every single field from our table scan, so every `select` is a `select * from ...`. We can do better than that, let's implement `Project`, which is how we extract fields from rows. Eventually, we'll do stuff for aliases, but now we're just supporting `select Title, ArtistId from Album`.
+
+We've got two styles of projection.
+
+```rust 
+enum ProjectFields {
+  // return everything
+  Star,
+  // return a filtered subset of fields
+  Fields(Vec<ColumnName>)
+}
+```
+First we'll make a function that works on a single row:
+
+```rust 
+fn project_fields(row: serde_json::Value, fields: &[Column]) -> serde_json::Value {
+    let field_set: BTreeSet<_> = fields.iter().map(|c| c.name.clone()).collect();
+    if let serde_json::Value::Object(map) = row {
+        let new_map = map
+            .into_iter()
+            .filter(|(k, _)| field_set.contains(k))
+            .collect();
+        serde_json::Value::Object(new_map)
+    } else {
+        row
+    }
+}
+```
+
+Then we add it to `run_query`, completing it for now.
+
+```rust 
+pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
+  match query {
+    Query::From(From { table_name }) => table_scan(table_name),
+    Query::Filter(Filter { from, filter }) => run_query(from)
+      .into_iter()
+      .filter(|row| apply_predicate(row, filter))
+      .collect(),
+    Query::Project(Project { from, fields }) => {
+      let inner = run_query(from);
+
+      match fields {
+        ProjectFields::Star => inner,
+        ProjectFields::Fields(fields) => inner
+          .into_iter()
+          .map(|row| project_fields(row, fields))
+          .collect(),
+      }
+    }
+  }
+}
+```
+
+
+## Bringing it together
+
+We then add a basic CLI using [clap](https://docs.rs/clap/latest/clap/), that takes a single argument `--sql`. This means we can run a query with `cargo run --bin cli -- --sql 'select Title from Album where AlbumId = 48' | jq `.
+
+```bash 
+{
+  "AlbumId": 48,
+  "Title": "The Essential Miles Davis (Disc 1)",
+  "ArtistId": 68
+}
+```
+
+Not bad, not bad at all.
+
+
+```rust
+use clap::Parser;
+use core::{parse, run_query};
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// SQL query to run
+    #[arg(short, long)]
+    sql: String,
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let query = parse(&args.sql).unwrap();
+    let results = run_query(&query);
+
+    for result in results {
+        println!("{result}");
+    }
+}
+```
+
+Error handling? Schmerror schmandling.
+
 
 ## What's next?
 
