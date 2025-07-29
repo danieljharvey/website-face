@@ -20,7 +20,7 @@ OK. So what we're going to do in part 1 is:
 - Filter results from that table (`Filter`)
 - Choose the fields we want to look at (`Project`)
 
-Because we're only starting with reads, our tables are going to be static JSON files taken from the [chinook dataset](https://github.com/marko-knoebl/chinook-database-json). We are using this because it's full of rock albums and it's nice to be reminder that Led Zeppelin are a totally sick band from time to time.
+We're going to be concentrating on the Query Engine part of the database initially,mostly because I'm more interested in it, so our tables are going to be static JSON files taken from the [chinook dataset](https://github.com/marko-knoebl/chinook-database-json). We are using this because it's full of rock albums and it's nice to be reminder that Led Zeppelin are a totally sick band from time to time.
 
 ## Our types
 
@@ -47,28 +47,22 @@ struct Filter {
 
 // boolean expression type
 pub enum Expr {
-    ColumnComparison {
-        column: Column,
-        op: Op,
-        literal: serde_json::Value,
-    },
+  ColumnComparison {
+    column: Column,
+    op: Op,
+    literal: serde_json::Value,
+  }
 }
 
 // compare two items  
 pub enum Op {
-    Equals,
+  Equals,
 }
 
 // choose which fields to return 
 struct Project {
   from: Box<Query>,
-  fields: ProjectFields 
-}
-
-// which fields to return
-enum ProjectFields {
-  Star,
-  Fields(Vec<ColumnName>)
+  fields: Vec<ColumnName> 
 }
 
 // name of a table
@@ -92,11 +86,11 @@ Now we've worked out what the user wants, we need to run the query. Initially we
 
 ```rust
 pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
-    match query {
-        Query::From(_) => todo!("Query::From"), 
-        Query::Filter(_) => todo!("Query::Filter"), 
-        Query::Project(_) => todo!("Query::Project")
-    }
+  match query {
+    Query::From(_) => todo!("Query::From"), 
+    Query::Filter(_) => todo!("Query::Filter"), 
+    Query::Project(_) => todo!("Query::Project")
+  }
 }
 ```
 We'll fill these `todo!` out one by one now.
@@ -109,24 +103,16 @@ Here is some code. Forgive me, Padre.
 
 ```rust
 fn table_scan(table_name: &TableName) -> Vec<serde_json::Value> {
-    match table_name.0.as_str() {
-        "Album" => {
-            let my_str = include_str!("../static/Album.json");
-            serde_json::from_str::<serde_json::Value>(my_str)
-              .unwrap()
-              .as_array()
-              .unwrap()
-              .clone()
-        },
-        "Artist" => {
-            let my_str = include_str!("../static/Artist.json");
-            serde_json::from_str::<serde_json::Value>(my_str)
-              .unwrap()
-              .as_array()
-              .unwrap()
-              .clone()
-        }
-        _ => panic!("table not found {table_name:?}"),
+  match table_name.0.as_str() {
+    "Album" => {
+      let my_str = include_str!("../static/Album.json");
+      serde_json::from_str::<Vec<serde_json::Value>>(my_str).unwrap()
+    },
+    "Artist" => {
+      let my_str = include_str!("../static/Artist.json");
+      serde_json::from_str::<Vec<serde_json::Value>>(my_str).unwrap()
+    }
+    _ => panic!("table not found {table_name:?}"),
     }
 }
 ```
@@ -135,9 +121,9 @@ Let's smash that into our `run_query` function:
 
 ```rust
 pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
-    match query {
-        Query::From(From { table_name }) => table_scan(table_name), 
-        ..  
+  match query {
+    Query::From(From { table_name }) => table_scan(table_name), 
+    // ..  
 ```
 
 It is not good code, but it is code. We'd test it, but it would still fail because of the other `todo!`. Oh well. Onwards.
@@ -150,15 +136,15 @@ Let's recap on our `Expr` type:
 
 ```rust
 pub enum Expr {
-    ColumnComparison {
-        column: Column,
-        op: Op,
-        literal: serde_json::Value,
-    },
+  ColumnComparison {
+    column: Column,
+    op: Op,
+    literal: serde_json::Value,
+  },
 }
 
 pub enum Op {
-    Equals,
+  Equals,
 }
 ```
 
@@ -168,24 +154,24 @@ We start by defining a function for deciding whether we care about a row. It tak
 
 ```rust
 fn apply_predicate(row: &serde_json::Value, where_expr: &Expr) -> bool {
-    match where_expr {
-        Expr::ColumnComparison {
-            column,
-            op,
-            literal,
-        } => {
-            // unwrap row into a map
-            let row_object = row.as_object().unwrap();
+  match where_expr {
+    Expr::ColumnComparison {
+      column,
+      op,
+      literal,
+    } => {
+      // unwrap row into a map
+      let row_object = row.as_object().unwrap();
 
-            // grab the column we care about 
-            let value = row_object.get(&column.name).unwrap();
+      // grab the column we care about 
+      let value = row_object.get(&column.name).unwrap();
 
-            // compare it to `value` 
-            match op {
-                Op::Equals => value == literal,
-            }
-        }
+      // compare it to `value` 
+      match op {
+        Op::Equals => value == literal,
+      }
     }
+  }
 }
 ```
 
@@ -193,54 +179,43 @@ Let's use it in our `run_query` function:
 
 ```rust
 pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
-    match query {
-        Query::From(From { table_name }) => table_scan(table_name),
-        Query::Filter(Filter { from, filter }) => run_query(from)
-            .into_iter()
-            .filter(|row| apply_predicate(row, filter))
-            .collect(), 
-        ..
+  match query {
+    Query::From(From { table_name }) => table_scan(table_name),
+    Query::Filter(Filter { from, filter }) => run_query(from)
+      .into_iter()
+      .filter(|row| apply_predicate(row, filter))
+      .collect(), 
+      // ..
 ```
+
 We'd test a query, but it'd still fail. But nearly!
 
 ## Query::Project
 
 So far we return every single field from our table scan, so every `select` is a `select * from ...`. We can do better than that, let's implement `Project`, which is how we extract fields from rows. Eventually, we'll allowing renaming things with aliases, but that's quite boring and fiddly, so for now we're just supporting stuff like `select Title, ArtistId from Album`.
 
-We've got two styles of projection:
-
-```rust 
-enum ProjectFields {
-  // return everything
-  Star,
-  // return a filtered subset of fields
-  Fields(Vec<ColumnName>)
-}
-```
-First we'll make a function that works on a single row:
-
 ```rust 
 fn project_fields(row: serde_json::Value, fields: &[Column]) -> serde_json::Value {
-    // make set of columns to keep
-    let field_set: BTreeSet<_> = 
-      fields
-        .iter()
-        .map(|c| c.name.clone())
-        .collect();
+  // make set of columns to keep
+  let field_set: BTreeSet<_> = 
+    fields
+      .iter()
+      .map(|c| c.name.clone())
+      .collect();
 
     
-    if let serde_json::Value::Object(map) = row {
-        // collect all the items we still want
-        let new_map = map
-            .into_iter()
-            .filter(|(k, _)| field_set.contains(k))
-            .collect();
+  if let serde_json::Value::Object(map) = row {
+    // collect all the items we still want
+    let new_map = map
+      .into_iter()
+      .filter(|(k, _)| field_set.contains(k))
+      .collect();
 
-        // wrap it back up again
-        serde_json::Value::Object(new_map)
-    } else {
-        panic!("expected Object")
-    }
+    // wrap it back up again
+    serde_json::Value::Object(new_map)
+  } else {
+    panic!("expected Object")
+  }
 }
 ```
 
@@ -255,17 +230,11 @@ pub fn run_query(query: &Query) -> Vec<serde_json::Value> {
       .filter(|row| apply_predicate(row, filter))
       .collect(),
     Query::Project(Project { from, fields }) => {
-      let inner = run_query(from);
-
-      match fields {
-        // just return everything
-        ProjectFields::Star => inner,
-        // filter the columns in each row
-        ProjectFields::Fields(fields) => inner
-          .into_iter()
-          .map(|row| project_fields(row, fields))
-          .collect(),
-      }
+      // filter the columns in each row
+      run_query(from)
+        .into_iter()
+        .map(|row| project_fields(row, fields))
+        .collect(),
     }
   }
 }
@@ -283,20 +252,20 @@ use core::{parse, run_query};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// SQL query to run
-    #[arg(short, long)]
-    sql: String,
+  /// SQL query to run
+  #[arg(short, long)]
+  sql: String,
 }
 
 fn main() {
-    let args = Args::parse();
+  let args = Args::parse();
 
-    let query = parse(&args.sql).unwrap();
-    let results = run_query(&query);
+  let query = parse(&args.sql).unwrap();
+  let results = run_query(&query);
 
-    for result in results {
-        println!("{result}");
-    }
+  for result in results {
+    println!("{result}");
+  }
 }
 ```
 
