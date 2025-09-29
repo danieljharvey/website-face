@@ -20,7 +20,8 @@
 
         devShell = pkgs.mkShell {
           buildInputs = [
-            pkgs.zola 
+            pkgs.zola
+            pkgs.just
           ];
 
           inputsFrom = builtins.attrValues self.packages.${system};
