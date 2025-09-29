@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block content %}
+<section class="blog-list-section">
+  <h1 class="title">#{{ term.name | safe }}</h1>
+  <ul>
+    {%for page in term.pages %}
+    <li>
+      <a class="post-link" href="{{ page.permalink | safe}}">
+        {{ page.title | safe }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock content %}

@@ -1,0 +1,312 @@
+:root {
+  --main-bg: #fbfbfb;
+  --code-bg: #faf7d5;
+  --main-text: #333;
+  --light-text: #555;
+  --cyan: rgb(57, 153, 164);
+  --green: rgb(52, 154, 47);
+  --magenta: rgb(184, 77, 159);
+  --comments: #999;
+  --code-outline: #d2d0b3;
+}
+
+html {
+  font-size: 80%;
+  font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+  background-color: var(--main-bg);
+  color: var(--main-text);
+}
+
+body {
+  font-size: 1.6rem;
+  color: var(--main-text);
+}
+
+header {
+  color: var(--green);
+  border-bottom: 0.2rem solid var(--cyan);
+}
+
+nav {
+  text-align: right;
+}
+
+nav a {
+  font-size: 1.8rem;
+  color: var(--green);
+  text-decoration: none;
+}
+
+a {
+  color: var(--magenta);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+footer {
+  margin-top: 2rem;
+  padding: 1.2rem 0;
+  border-top: 0.2rem solid var(--cyan);
+  font-size: 1.2rem;
+  color: var(--light-text);
+}
+
+h1 {
+  font-size: 2.4rem;
+  color: var(--main-text);
+}
+
+h2 {
+  font-size: 2rem;
+  color: var(--main-text);
+}
+
+h3,
+h4,
+h5,
+h6 {
+  color: var(--cyan);
+}
+
+article .header {
+  font-size: 1.4rem;
+  color: var(--light-text);
+}
+
+.logo a {
+  color: var(--green);
+  text-decoration: none;
+}
+
+p,
+li {
+  font-weight: 100;
+  font-size: 100%;
+}
+
+ol li {
+    font-weight: 500;
+}
+
+code {
+  white-space: pre-wrap;
+}
+
+p code,
+li code {
+  color: var(--magenta);
+  font-size: 100%;
+  background-color: var(--code-bg);
+  padding: 0 5px;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  color: var(--code-outline);
+  background-color: var(--code-outline);
+}
+
+pre {
+  font-family: 'Fira Code', Menlo, Monaco, monospace;
+  background-color: var(--code-bg);
+  padding: 10px;
+  font-size: 80%;
+  border: 1px solid var(--code-outline);
+}
+
+figure {
+  text-align: center;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
+img {
+    max-width: 100%;
+}
+
+figcaption {
+    font-size: 1rem;
+}
+
+@media (max-width: 319px) {
+  body {
+    width: 90%;
+    margin: 0;
+    padding: 0 5%;
+  }
+  header {
+    margin: 2rem 0;
+  }
+  nav {
+    margin: 0 auto 2rem;
+    text-align: center;
+  }
+  footer {
+    text-align: center;
+  }
+  .logo {
+    text-align: center;
+    margin: 1rem auto 3rem;
+  }
+  .logo a {
+    font-size: 2.4rem;
+  }
+  nav a {
+    display: block;
+    line-height: 1.6;
+  }
+  pre.sourceCode {
+    font-size: 80%;
+  }
+}
+
+@media (min-width: 320px) {
+  body {
+    width: 90%;
+    margin: 0;
+    padding: 0 5%;
+  }
+  header {
+    margin: 2rem 0;
+  }
+  nav {
+    margin: 0 auto 2rem;
+    text-align: center;
+  }
+  footer {
+    text-align: center;
+  }
+  .logo {
+    text-align: center;
+    margin: 1rem auto 1rem;
+  }
+  .logo a {
+    font-size: 2.4rem;
+  }
+  nav a {
+    display: inline;
+    margin: 0 0.6rem;
+  }
+  pre.sourceCode {
+    font-size: 80%;
+  }
+}
+
+@media (min-width: 640px) {
+  body {
+    width: 60rem;
+    margin: 0 auto;
+    padding: 0;
+  }
+  header {
+    margin: 0 0 1.5rem;
+    padding: 1.2rem 0;
+  }
+  nav {
+    margin: 0;
+    text-align: right;
+  }
+  nav a {
+    margin: 0 0 0 1.2rem;
+    display: inline;
+  }
+  footer {
+    text-align: right;
+  }
+  .logo {
+    margin: 0;
+    text-align: left;
+  }
+  .logo a {
+    float: left;
+    font-size: 1.8rem;
+  }
+}
+
+blockquote {
+  background-color: #d8f1ef;
+  padding: 5px 10px;
+  margin-left: 0px;
+  margin-right: 0px;
+  border: 1px solid var(--cyan);
+}
+
+blockquote p {
+  margin: 10px 0;
+}
+
+/* code highlighting */
+a.sourceLine {
+  color: var(--green);
+}
+a.sourceLine:hover {
+  text-decoration: none;
+}
+.header.sourceCode,
+tr.sourceCode,
+td.lineNumbers,
+td.sourceCode,
+table.sourceCode pre {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+  border: none;
+  color: #eee;
+}
+td.lineNumbers {
+  border-right: 1px solid #aaaaaa;
+  text-align: right;
+  color: var(--light-text);
+  padding-right: 5px;
+  padding-left: 5px;
+}
+td.sourceCode {
+  padding-left: 5px;
+}
+.sourceCode span.kw {
+  color: var(--cyan);
+  font-weight: bold;
+}
+.sourceCode span.dt {
+  color: var(--magenta);
+}
+.sourceCode span.dv {
+  color: var(--cyan);
+}
+.sourceCode span.bn {
+  color: var(--cyan);
+}
+.sourceCode span.fl {
+  color: var(--cyan);
+}
+.sourceCode span.ch {
+  color: var(--cyan);
+}
+.sourceCode span.st {
+  color: var(--cyan);
+}
+.sourceCode span.co {
+  color: var(--comments);
+  font-style: italic;
+}
+.sourceCode span.ot {
+  color: var(--magenta);
+}
+.sourceCode span.al {
+  color: var(--cyan);
+  font-weight: bold;
+}
+.sourceCode span.fu {
+  color: var(--green);
+}
+.sourceCode span.re {
+}
+.sourceCode span.er {
+  color: var(--cyan);
+  font-weight: bold;
+}

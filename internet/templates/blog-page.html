@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+  {{ page.title }}
+</h1>
+<p class="subtitle"><strong>{{ page.date }}</strong></p>
+<p>
+ <p class="blog-meta">
+        {% for tag in page.taxonomies.tags %}{% if loop.last %}
+        <a href="{{ config.base_url }}/tags/{{ tag | safe }}/"
+          >#{{ tag | safe }}</a
+        >
+        {%else %}
+        <a href="{{ config.base_url }}/tags/{{ tag | safe }}/"
+          >#{{ tag | safe }}</a
+        >{% endif %} {% endfor %}
+      </p>
+
+{{ page.content | safe }}
+{% endblock content %}
